@@ -15,7 +15,7 @@ const LocationSchema = new mongoose.Schema(
     // if that location has an incharge
     locationInchargeId :{
       type : mongoose.Schema.Types.ObjectId,
-      ref : "Location"
+      ref : "User"
     }
   },
   {

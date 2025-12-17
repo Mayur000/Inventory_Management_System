@@ -12,6 +12,16 @@ const UserSchema = new mongoose.Schema(
       enum: ["ADMIN", "LAB_ASSISTANT", "LAB_INCHARGE", "PRATICAL_INCHARGE"],
       required: true,
     },
+
+    //email password requird for login
+    email : {
+      type : String,
+      unique : true,
+    },
+
+    password : {
+      type : String,
+    }
   },
   {
     timestamps: true,

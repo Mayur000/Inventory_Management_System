@@ -12,6 +12,26 @@ const AssetTypeSchema = new mongoose.Schema(
       required: true,
     },
 
+    eachPurchaseInfo : [{
+      rate : {
+        type : Number
+      },
+
+      totalQuantityBought:{
+        type:Number,
+      },
+
+      totalCost : {
+        type : Number,
+      },
+      billNo:{
+        type:String,
+      },
+      DPRno:{
+        type:String
+      }
+    }]
+
     //more attributes can be added later on
   },
   {

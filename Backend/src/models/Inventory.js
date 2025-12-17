@@ -17,10 +17,6 @@ const InventorySchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
-    cost : {
-      type : Number,
-      required : true
-    }
   },
   {
     timestamps: true,

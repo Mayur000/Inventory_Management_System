@@ -7,11 +7,11 @@ const IssueSchema = new mongoose.Schema(
       ref: "Location",
       required: true,
     },
-    individualAssetId: {
+    individualAssetIdArray: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "IndividualAsset",
       required: true,
-    },
+    }],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
