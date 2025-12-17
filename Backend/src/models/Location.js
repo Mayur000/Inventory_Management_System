@@ -8,9 +8,15 @@ const LocationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["LAB", "STORE", "SCRAP"],
+      enum: ["lab", "mainStore", "stock", "room"],
       required: true,
     },
+
+    // if that location has an incharge
+    locationInchargeId :{
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "Location"
+    }
   },
   {
     timestamps: true,

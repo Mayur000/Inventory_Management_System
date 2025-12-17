@@ -12,11 +12,6 @@ const UserSchema = new mongoose.Schema(
       enum: ["ADMIN", "LAB_ASSISTANT", "LAB_INCHARGE", "PRATICAL_INCHARGE"],
       required: true,
     },
-
-    locationId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Location",
-    },
   },
   {
     timestamps: true,

@@ -27,12 +27,7 @@ const IndividualAssetSchema = new mongoose.Schema(
     purchasedDate: {
       type: Date,
     },
-    issues: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Issue",
-      },
-    ],
+    
   },
   {
     timestamps: true,

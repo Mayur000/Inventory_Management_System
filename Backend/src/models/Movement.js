@@ -29,6 +29,14 @@ const MovementSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+    // if the movement invloves an issue then link them
+    issues: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Issue",
+      },
+    ],
     date: {
       type: Date,
       default: Date.now,

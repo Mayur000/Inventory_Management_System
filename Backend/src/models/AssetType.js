@@ -7,10 +7,12 @@ const AssetTypeSchema = new mongoose.Schema(
       required: true,
     },
 
-    brand: {
+    configuration: {
       type: String,
       required: true,
     },
+
+    //more attributes can be added later on
   },
   {
     timestamps: true,
