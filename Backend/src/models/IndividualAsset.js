@@ -21,7 +21,7 @@ const IndividualAssetSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Working", "Spoiled", "Discarded", "Repair"],
+      enum: ["Working", "Discarded"],
       default: "Working",
     },
     purchasedDate: {

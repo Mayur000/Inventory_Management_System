@@ -19,7 +19,7 @@ const IssueSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Pending", "InProgress", "Resolved", "Rejected"],
+      enum: ["Pending", "InProgress", "Resolved"],
       default: "Pending",
     },
     reason: {
