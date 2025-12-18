@@ -12,8 +12,7 @@ const AssetTypeSchema = new mongoose.Schema(
       required: true,
     },
 
-    eachPurchaseInfo : [{
-      rate : {
+    rate : {
         type : Number
       },
 
@@ -30,7 +29,6 @@ const AssetTypeSchema = new mongoose.Schema(
       DPRno:{
         type:String
       }
-    }]
 
     //more attributes can be added later on
   },
