@@ -18,15 +18,15 @@ router.post("/", createAssetType);
 router.get("/", getAllAssetTypes);
 
 // READ (ONE)
-// GET /api/asset-types/:id
-router.get("/:id", getAssetTypeById);
+// GET /api/asset-types/:assetTypeId
+router.get("/:assetTypeId", getAssetTypeById);
 
 // UPDATE
-// PUT /api/asset-types/:id
-router.put("/:id", updateAssetType);
+// PUT /api/asset-types/:assetTypeId
+router.put("/:assetTypeId", updateAssetType);
 
 // DELETE
-// DELETE /api/asset-types/:id
-router.delete("/:id", deleteAssetType);
+// DELETE /api/asset-types/:assetTypeId
+router.delete("/:assetTypeId", deleteAssetType);
 
 export default router;
