@@ -20,8 +20,8 @@ const IndividualAssetSchema = new mongoose.Schema({
     },
     status: {
 		type: String,
-		enum: ["Working", "Discarded"],
-		default: "Working",
+		enum: ["inUse", "discarded", "inStock"],
+		default: "inUse",
     },
     
 },{ timestamps: true, });

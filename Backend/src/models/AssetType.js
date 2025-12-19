@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-//for every schema the guideline will be shown on client side
+//for every schema the guidelines for as to what data should be entered will be shown on client side
 
 const AssetTypeSchema = new mongoose.Schema({
 	name: {
