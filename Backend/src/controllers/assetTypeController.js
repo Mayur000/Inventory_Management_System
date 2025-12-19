@@ -17,6 +17,10 @@ export const createAssetType = async (req, res) => {
 		return res.status(201).json({ success: true, message: "Asset type created successfully", data: assetType, });
 	} catch (error) {
 		console.error( "Error in createAssetType controller : " ,error);
+		//Mongoose validation error (runValidators) -- for create() and save() methods runValidators run automatically behind the scenes.
+		if (error.name === "ValidationError") {
+			return res.status(400).json({ success: false, message: "Please send valid data as mentioned in the guildelines."});
+		}
 		return res.status(500).json({ success: false, message: "Failed to create asset type."});
 	}
 };
@@ -72,7 +76,7 @@ export const updateAssetType = async (req, res) => {
 		const updatedAssetType = await AssetType.findByIdAndUpdate(
 			req.params.assetTypeId,
 			value,
-			//check why these parameters and are they required
+			//new : true sends the updated object, reunValidators : true runs the schema level validators provided my mongoose --eg: min=0, max=100 or something like that before saving into DB
 			{ new: true, runValidators: true }
 		);
 
@@ -83,6 +87,11 @@ export const updateAssetType = async (req, res) => {
 		return res.status(200).json({ success: true, message: "Asset type updated successfully", data: updatedAssetType, });
 	} catch (error) {
 		console.error(error);
+
+		//Mongoose validation error (runValidators)
+		if (error.name === "ValidationError") {
+			return res.status(400).json({ success: false, message: "Please send valid data as mentioned in the guildelines."});
+		}
 		return res.status(500).json({ success: false, message: "Failed to update asset type", });
 	}
 };

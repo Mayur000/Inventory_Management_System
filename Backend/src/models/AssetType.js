@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+//for every schema the guideline will be shown on client side
+
 const AssetTypeSchema = new mongoose.Schema({
 	name: {
 		type: String,
@@ -31,7 +33,7 @@ const AssetTypeSchema = new mongoose.Schema({
 		type:String
 	}
 
-	//more attributes can be added later on
+	//more attributes can be added later on --like purchaseDate etc
 }, { timestamps: true, }
 );
 

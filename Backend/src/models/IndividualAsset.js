@@ -1,37 +1,29 @@
 import mongoose from "mongoose";
 
-const IndividualAssetSchema = new mongoose.Schema(
-  {
+const IndividualAssetSchema = new mongoose.Schema({
     assetTypeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "AssetType",
-      required: true,
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "AssetType",
+		required: true,
     },
 
     locationId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Location",
-      required: true,
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "Location",
+		required: true,
     },
 
     serialNumber: {
-      type: String,
-      required: true,
-      unique: true,
+		type: String,
+		required: true,
+		unique: true,
     },
     status: {
-      type: String,
-      enum: ["Working", "Discarded"],
-      default: "Working",
-    },
-    purchasedDate: {
-      type: Date,
+		type: String,
+		enum: ["Working", "Discarded"],
+		default: "Working",
     },
     
-  },
-  {
-    timestamps: true,
-  }
-);
+},{ timestamps: true, });
 
 export default mongoose.model("IndividualAsset", IndividualAssetSchema);
