@@ -62,7 +62,8 @@ export const createIssue = async (req, res) => {
 };
 
 
-// GET ALL ISSUES
+// GET ALL ISSUES --yet to add filter, search and pagination
+//add validations for all filter and alos prevent regex  or nosql injection which can happpen through req.pparams
 export const getAllIssues = async (req, res) => {
     try {
         const issues = await Issue.find()

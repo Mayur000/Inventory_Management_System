@@ -3,7 +3,6 @@ import AssetType from "../models/AssetType.js";
 import { createAssetTypeSchema, updateAssetTypeSchema } from "../validators/assetTypeValidation.js";
 
 //Create a new Asset Type
-//POST /api/asset-types
 export const createAssetType = async (req, res) => {
 	try {
 		const {error, value} = createAssetTypeSchema.validate(req.body);
@@ -25,8 +24,8 @@ export const createAssetType = async (req, res) => {
 	}
 };
 
-// Get all Asset Types
-// GET /api/asset-types
+// Get all Asset Types --yet to add search, filter and pagination
+//add validations for all filter and alos prevent regex  or nosql injection which can happpen through req.pparams
 export const getAllAssetTypes = async (req, res) => {
 	try {
 		const assetTypes = await AssetType.find();
@@ -40,7 +39,6 @@ export const getAllAssetTypes = async (req, res) => {
 
 
 //Get single Asset Type by ID
-//GET /api/asset-types/:id
 export const getAssetTypeById = async (req, res) => {
 	try {
 		if(!req.params.assetTypeId || !mongoose.Types.ObjectId.isValid(req.params.assetTypeId)){
@@ -62,7 +60,6 @@ export const getAssetTypeById = async (req, res) => {
 
 
 //Update Asset Type
-//PUT /api/asset-types/:id
 export const updateAssetType = async (req, res) => {
 
 	try {
@@ -98,7 +95,6 @@ export const updateAssetType = async (req, res) => {
 
 
 // Delete Asset Type
-// DELETE /api/asset-types/:id
 export const deleteAssetType = async (req, res) => {
 	try {
 
