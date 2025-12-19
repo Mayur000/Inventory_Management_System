@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const MovementSchema = new mongoose.Schema(
   {
-    individualAssetId: [
+    individualAssetIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "IndividualAsset",
@@ -21,7 +21,7 @@ const MovementSchema = new mongoose.Schema(
     },
     actionType: {
       type: String,
-      enum: ["TRANSFER", "INWARD", "OUTWARD", "SPOILED", "REPAIR"],
+      enum: ["transfer", "discard",],
       required: true,
     },
     doneBy: {

@@ -7,7 +7,7 @@ const IssueSchema = new mongoose.Schema(
       ref: "Location",
       required: true,
     },
-    individualAssetIdArray: [{
+    individualAssetIds: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "IndividualAsset",
       required: true,
@@ -19,8 +19,8 @@ const IssueSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Pending", "InProgress", "Resolved"],
-      default: "Pending",
+      enum: ["created", "inProgress", "solved"],
+      default: "created",
     },
     reason: {
       type: String,
