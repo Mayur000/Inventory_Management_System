@@ -14,13 +14,13 @@ const router = express.Router();
 // CREATE SINGLE ASSET --admin or labAssistant only
 router.post("/", createIndividualAsset);
 
-// GET ALL ASSETS --admin or labAssistant only
+// GET ALL ASSETS --public
 router.get("/", getAllIndividualAssets);
 
 // get inventory like asset summary -- roles = admin or labIncharge
 router.get( "/asset-summary", getAssetSummary );
 
-// GET SINGLE ASSET BY ID --admin or labAssistant only
+// GET SINGLE ASSET BY ID --public
 router.get("/:individualAssetId", getIndividualAssetById);
 
 // UPDATE SINGLE ASSET (other than status/location) --admin or labAssistant only

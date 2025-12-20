@@ -9,24 +9,19 @@ import {
 
 const router = express.Router();
 
-// CREATE
-// POST /api/asset-types
+// CREATE --admin or labAssistant
 router.post("/", createAssetType);
 
-// READ (ALL)
-// GET /api/asset-types
+// READ (ALL) --public
 router.get("/", getAllAssetTypes);
 
-// READ (ONE)
-// GET /api/asset-types/:assetTypeId
+// READ (ONE) --public
 router.get("/:assetTypeId", getAssetTypeById);
 
-// UPDATE
-// PUT /api/asset-types/:assetTypeId
+// UPDATE --admin or labAssistant
 router.put("/:assetTypeId", updateAssetType);
 
-// DELETE
-// DELETE /api/asset-types/:assetTypeId
+// DELETE --admin or labAssistant
 router.delete("/:assetTypeId", deleteAssetType);
 
 export default router;

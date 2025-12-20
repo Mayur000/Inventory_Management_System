@@ -17,6 +17,10 @@ const AssetTypeSchema = new mongoose.Schema({
 		type : Number
 	},
 
+	minQuantity : {
+		type : Number
+	},
+
 	//totalQuantity for our department
 	//example --if total 50 desktops were boought but only 25 desktops were taken by our department then enter 25 in form and not 50
 	totalQuantityBought:{
@@ -31,7 +35,8 @@ const AssetTypeSchema = new mongoose.Schema({
 	},
 	DPRno:{
 		type:String
-	}
+	},
+	
 
 	//more attributes can be added later on --like purchaseDate etc
 }, { timestamps: true, }

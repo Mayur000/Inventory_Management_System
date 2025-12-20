@@ -4,6 +4,9 @@ import Location from "../models/Location.js"
 import AssetType from "../models/AssetType.js";
 import { createIndividualAssetSchema, updateIndividualAssetSchema, getAllIndividualAssetsQuerySchema, getAssetSummaryQuerySchema } from "../validators/individualAssetValidation.js";
 
+// Helper function to escape special regex characters
+const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
 // CREATE SINGLE ASSET
 export const createIndividualAsset = async (req, res) => {
     try {
@@ -57,7 +60,7 @@ export const getAllIndividualAssets = async (req, res) => {
             });
         }
 
-        let { assetTypeId, locationId, status, page, limit } = value;
+        let { assetTypeId, locationId, status, page, limit, search } = value;
 
         // Role-based override
         if (req.user.role === "labIncharge") {
@@ -69,10 +72,20 @@ export const getAllIndividualAssets = async (req, res) => {
         if (locationId) filter.locationId = locationId;
         if (status) filter.status = status;
 
+        // SAFE SEARCH
+        if (search) {
+            const safeSearch = escapeRegex(search);
+            const regex = new RegExp(safeSearch, "i");
+
+            filter.$or = [
+                { serialNumber: regex }
+            ];
+        }
+
         const assets = await IndividualAsset.find(filter)
             .skip((page - 1) * limit)
             .limit(limit)
-            .populate("assetTypeId locationId");
+            .populate("assetTypeId locationId").lean();
 
         const total = await IndividualAsset.countDocuments(filter);
 
@@ -245,7 +258,7 @@ export const getAssetSummary = async (req, res) => {
         }
         ];
 
-        // 🔁 GROUPING LOGIC CHANGES HERE
+        // GROUPING LOGIC CHANGES HERE
         if (locationId) {
         // ONE location → group by asset type only
         pipeline.push({
@@ -302,7 +315,7 @@ export const getAssetSummary = async (req, res) => {
 
         const summary = await IndividualAsset.aggregate(pipeline);
 
-        res.status(200).json({
+        return res.status(200).json({
         success: true,
         count: summary.length,
         data: summary
@@ -310,7 +323,7 @@ export const getAssetSummary = async (req, res) => {
 
     } catch (error) {
         console.error("Asset summary error:", error);
-        res.status(500).json({
+        return res.status(500).json({
         success: false,
         message: "Failed to fetch asset summary"
         });

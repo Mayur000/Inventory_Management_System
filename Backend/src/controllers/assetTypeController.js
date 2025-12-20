@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 import AssetType from "../models/AssetType.js";
-import { createAssetTypeSchema, updateAssetTypeSchema } from "../validators/assetTypeValidation.js";
+import { createAssetTypeSchema, updateAssetTypeSchema, getAllAssetTypesQuerySchema } from "../validators/assetTypeValidation.js";
+
+const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+
 
 //Create a new Asset Type
 export const createAssetType = async (req, res) => {
@@ -28,15 +31,65 @@ export const createAssetType = async (req, res) => {
 //add validations for all filter and alos prevent regex  or nosql injection which can happpen through req.pparams
 export const getAllAssetTypes = async (req, res) => {
 	try {
-		const assetTypes = await AssetType.find();
+		// Validate query params
+		const { error, value } = getAllAssetTypesQuerySchema.validate(req.query);
+		if (error) {
+		return res
+			.status(400)
+			.json({ success: false, message: error.details[0].message });
+		}
 
-		return res.status(200).json({ success: true, count: assetTypes.length, data: assetTypes, });
+		const { search, name, configuration, page, limit } = value;
+
+		const filter = {};
+
+		// Simple filters (dropdowns / exact fields)
+		if (name) {
+		filter.name = new RegExp(escapeRegex(name), "i");
+		}
+
+		if (configuration) {
+		filter.configuration = new RegExp(escapeRegex(configuration), "i");
+		}
+
+		// Global search (single input)
+		if (search) {
+		const safeSearch = escapeRegex(search);
+		const regex = new RegExp(safeSearch, "i");
+
+		filter.$or = [
+			{ name: regex },
+			{ configuration: regex },
+			{ billNo: regex },
+			{ DPRno: regex },
+		];
+		}
+
+		// Pagination
+		const assetTypes = await AssetType.find(filter)
+		.sort({ createdAt: -1 })
+		.skip((page - 1) * limit)
+		.limit(limit)
+		.lean();
+
+		const total = await AssetType.countDocuments(filter);
+
+		return res.status(200).json({
+		success: true,
+		count: assetTypes.length,
+		total,
+		currentPage: page,
+		totalPages: Math.ceil(total / limit),
+		data: assetTypes,
+		});
 	} catch (error) {
 		console.error(error);
-		return res.status(500).json({ success: false, message: "Failed to fetch asset types", });
+		return res.status(500).json({
+		success: false,
+		message: "Failed to fetch asset types",
+		});
 	}
 };
-
 
 //Get single Asset Type by ID
 export const getAssetTypeById = async (req, res) => {

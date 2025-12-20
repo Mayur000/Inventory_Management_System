@@ -34,6 +34,9 @@ export const getAssetSummaryQuerySchema = Joi.object({
 });
 
 export const getAllIndividualAssetsQuerySchema = Joi.object({
+    
+    search: Joi.string().trim().optional(),
+
     assetTypeId: Joi.string().trim()
         .custom(objectIdValidator)
         .optional(),
