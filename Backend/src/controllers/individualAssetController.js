@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import IndividualAsset from "../models/IndividualAsset.js";
 import Location from "../models/Location.js"
 import AssetType from "../models/AssetType.js";
-import { createIndividualAssetSchema, updateIndividualAssetSchema } from "../validators/individualAssetValidation.js";
+import { createIndividualAssetSchema, updateIndividualAssetSchema, getAllIndividualAssetsQuerySchema, getAssetSummaryQuerySchema } from "../validators/individualAssetValidation.js";
 
 // CREATE SINGLE ASSET
 export const createIndividualAsset = async (req, res) => {
@@ -22,20 +22,12 @@ export const createIndividualAsset = async (req, res) => {
         if (!locationExists) {
             return res.status(400).json({ success: false, message: "Invalid locationId." });
         }
-        if (value.status === "discarded" && locationExists.type !== "scrap" || value.status === "inStock" && locationExists.type !== "stock") {
-            return res.status(400).json({
-                success: false,
-                message: "Discarded assets must be stored in scrap location, and In Stock assets must be stored in stock location."
-            });
+        if (value.status === "discarded" && locationExists.type !== "scrap") {
+            return res.status(400).json({ success: false, message: "Discarded assets must be stored in scrap location." });
         }
-
-
-        if (value.status === "Discarded" && locationExists.type !== "scrap") {
-    return res.status(400).json({
-        success: false,
-        message: "Discarded assets must be stored in scrap location."
-    });
-}
+        if (value.status === "inStock" && locationExists.type !== "stock") {
+            return res.status(400).json({ success: false, message: "In Stock assets must be stored in stock location." });
+        }
 
 
         const asset = await IndividualAsset.create(value);
@@ -56,13 +48,20 @@ export const createIndividualAsset = async (req, res) => {
 //add validations for all filter and alos prevent regex  or nosql injection which can happpen through req.pparams
 export const getAllIndividualAssets = async (req, res) => {
     try {
-        const { assetTypeId, locationId, status, page = 1, limit = 50 } = req.query;
-
-        if (assetTypeId && !mongoose.Types.ObjectId.isValid(assetTypeId)) {
-            return res.status(400).json({ success: false, message: "Invalid assetTypeId" });
+        // Joi validation
+        const { error, value } = getAllIndividualAssetsQuerySchema.validate(req.query);
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.details[0].message
+            });
         }
-        if (locationId && !mongoose.Types.ObjectId.isValid(locationId)) {
-            return res.status(400).json({ success: false, message: "Invalid locationId" });
+
+        let { assetTypeId, locationId, status, page, limit } = value;
+
+        // Role-based override
+        if (req.user.role === "labIncharge") {
+            locationId = req.user.locationId;
         }
 
         const filter = {};
@@ -72,21 +71,33 @@ export const getAllIndividualAssets = async (req, res) => {
 
         const assets = await IndividualAsset.find(filter)
             .skip((page - 1) * limit)
-            .limit(Number(limit))
+            .limit(limit)
             .populate("assetTypeId locationId");
 
         const total = await IndividualAsset.countDocuments(filter);
 
-        return res.status(200).json({ success: true, count: total, data: assets });
+        return res.status(200).json({
+            success: true,
+            count: total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            data: assets
+        });
+
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ success: false, message: "Failed to fetch individual assets." });
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch individual assets."
+        });
     }
 };
+
 
 // GET SINGLE ASSET
 export const getIndividualAssetById = async (req, res) => {
     try {
+
         const { individualAssetId } = req.params;
         if (!mongoose.Types.ObjectId.isValid(individualAssetId)) {
             return res.status(400).json({ success: false, message: "Valid asset ID is required." });
@@ -166,4 +177,144 @@ export const deleteIndividualAsset = async (req, res) => {
         return res.status(500).json({ success: false, message: "Failed to delete individual asset." });
     }
 };
+
+
+export const getAssetSummary = async (req, res) => {
+    try {
+
+        let locationId;
+
+
+        if(req.user.role === "admin"){
+            if(req.query.locationId){
+                locationId = req.query.locationId;
+            }
+        }
+
+        if(req.user.role === "labIncharge"){
+            locationId = req.user.locationId;
+        }
+
+        // Joi validation (ONLY for query params)
+        const { error, value } = getAssetSummaryQuerySchema.validate(req.query);
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.details[0].message
+            });
+        }
+
+        const matchStage = {
+            status: { $ne: "discarded" }
+        };
+
+        if (locationId) {
+        matchStage.locationId = new mongoose.Types.ObjectId(locationId);
+        }
+
+        const pipeline = [
+        { $match: matchStage },
+
+        // join asset type
+        {
+            $lookup: {
+            from: "assettypes",
+            localField: "assetTypeId",
+            foreignField: "_id",
+            as: "assetType"
+            }
+        },
+        { $unwind: "$assetType" },
+
+        // join location
+        {
+            $lookup: {
+            from: "locations",
+            localField: "locationId",
+            foreignField: "_id",
+            as: "location"
+            }
+        },
+        { $unwind: "$location" },
+
+        // exclude scrap
+        {
+            $match: {
+            "location.type": { $ne: "scrap" }
+            }
+        }
+        ];
+
+        // 🔁 GROUPING LOGIC CHANGES HERE
+        if (locationId) {
+        // ONE location → group by asset type only
+        pipeline.push({
+            $group: {
+            _id: "$assetType._id",
+            assetName: { $first: "$assetType.name" },
+            configuration: { $first: "$assetType.configuration" },
+            quantity: { $sum: 1 }
+            }
+        });
+
+        pipeline.push({
+            $project: {
+            _id: 0,
+            assetTypeId: "$_id",
+            assetName: 1,
+            configuration: 1,
+            quantity: 1
+            }
+        });
+        } else {
+        // ALL locations → group by asset type + location
+        pipeline.push({
+            $group: {
+            _id: {
+                assetTypeId: "$assetType._id",
+                locationId: "$location._id"
+            },
+            assetName: { $first: "$assetType.name" },
+            configuration: { $first: "$assetType.configuration" },
+            locationName: { $first: "$location.name" },
+            locationType: { $first: "$location.type" },
+            quantity: { $sum: 1 }
+            }
+        });
+
+        pipeline.push({
+            $project: {
+            _id: 0,
+            assetTypeId: "$_id.assetTypeId",
+            locationId: "$_id.locationId",
+            assetName: 1,
+            configuration: 1,
+            locationName: 1,
+            locationType: 1,
+            quantity: 1
+            }
+        });
+        }
+
+        pipeline.push({
+        $sort: { assetName: 1 }
+        });
+
+        const summary = await IndividualAsset.aggregate(pipeline);
+
+        res.status(200).json({
+        success: true,
+        count: summary.length,
+        data: summary
+        });
+
+    } catch (error) {
+        console.error("Asset summary error:", error);
+        res.status(500).json({
+        success: false,
+        message: "Failed to fetch asset summary"
+        });
+    }
+};
+
 

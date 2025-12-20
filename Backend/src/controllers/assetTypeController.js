@@ -24,7 +24,7 @@ export const createAssetType = async (req, res) => {
 	}
 };
 
-// Get all Asset Types --yet to add search, filter and pagination
+// Get all Asset Types
 //add validations for all filter and alos prevent regex  or nosql injection which can happpen through req.pparams
 export const getAllAssetTypes = async (req, res) => {
 	try {
