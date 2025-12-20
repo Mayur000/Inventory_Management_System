@@ -3,7 +3,13 @@ import Issue from "../models/Issue.js";
 import User from "../models/User.js";
 import Location from "../models/Location.js";
 import IndividualAsset from "../models/IndividualAsset.js";
-import { createIssueSchema, updateIssueSchema } from "../validators/issueValidation.js";
+import { createIssueSchema, updateIssueSchema, getAllIssuesQuerySchema } from "../validators/issueValidation.js";
+
+
+// Helper function to escape special regex characters
+const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
+
 
 // CREATE ISSUE
 export const createIssue = async (req, res) => {
@@ -48,8 +54,9 @@ export const createIssue = async (req, res) => {
         const issue = await Issue.create({
             locationId: value.locationId,
             individualAssetIds: value.individualAssetIds,
-            createdBy: value.createdBy,
+            createdBy: req.user.id,
             reason: value.reason,
+            title : value.title,
             status: "created"
         });
 
@@ -64,33 +71,96 @@ export const createIssue = async (req, res) => {
 
 // GET ALL ISSUES --yet to add filter, search and pagination
 //add validations for all filter and alos prevent regex  or nosql injection which can happpen through req.pparams
+// Helper function to escape special regex characters
 export const getAllIssues = async (req, res) => {
     try {
-        const issues = await Issue.find()
-        .populate("locationId individualAssetIds createdBy")
-        .sort({ createdAt: -1 });
+        // Validate query params
+        const { error, value } = getAllIssuesQuerySchema.validate(req.query);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.details[0].message });
+        }
 
-        return res.status(200).json({ success: true, count: issues.length, data: issues });
+        let { status, locationId, search, page, limit } = value;
+
+        // Build role-based filter
+        const filter = {};
+
+        if (req.user.role === "practicalIncharge") {
+            filter.createdBy = req.user.id;
+        } else if (req.user.role === "labIncharge") {
+            filter.locationId = req.user.locationId;
+        } else if (req.user.role === "admin" || req.user.role === "labAssistant") {
+            if (locationId) filter.locationId = locationId;
+        }
+
+        // Apply additional filters
+        if (status) filter.status = status;
+
+        // Apply search safely
+        if (search) {
+            const safeSearch = escapeRegex(search);
+            const regex = new RegExp(safeSearch, "i");
+            filter.$or = [
+                { title: regex },
+                { reason: regex }
+            ];
+        }
+
+        // Pagination
+        const issues = await Issue.find(filter)
+            .populate("locationId individualAssetIds createdBy")
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        const total = await Issue.countDocuments(filter);
+
+        return res.status(200).json({
+            success: true,
+            count: total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            data: issues
+        });
+
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Failed to fetch issues" });
     }
 };
 
+
 // GET ISSUE BY ID
 export const getIssueById = async (req, res) => {
     try {
         const { issueId } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(issueId)) {
+
+        // Validate issueId
+        if (!issueId || !mongoose.Types.ObjectId.isValid(issueId)) {
             return res.status(400).json({ success: false, message: "Valid issue ID is required" });
         }
 
+        // Fetch the issue
         const issue = await Issue.findById(issueId).populate("locationId individualAssetIds createdBy");
         if (!issue) {
             return res.status(404).json({ success: false, message: "Issue not found" });
         }
 
+        // Role-based access control
+        const role = req.user.role;
+
+        if (role === "practicalIncharge" && !issue.createdBy.toString().equals(req.user.id.toString())) {
+            return res.status(403).json({ success: false, message: "You can only view issues created by you" });
+        }
+
+        if (role === "labIncharge" && !issue.locationId.toString().equals(req.user.locationId.toString())) {
+            return res.status(403).json({ success: false, message: "You can only view issues in your location" });
+        }
+
+        // admin and labAssistant can view all issues (no restriction)
+
         return res.status(200).json({ success: true, data: issue });
+
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Failed to fetch issue" });

@@ -11,11 +11,11 @@ const objectIdValidator = (value, helpers) => {
 
 // CREATE SCHEMA
 export const createIndividualAssetSchema = Joi.object({
-    assetTypeId: Joi.string().trim().required().custom(objectIdValidator, "ObjectId Validation"),
-    locationId: Joi.string().trim().required().custom(objectIdValidator, "ObjectId Validation"),
+    assetTypeId: Joi.string().trim().required().custom(objectIdValidator),
+    locationId: Joi.string().trim().required().custom(objectIdValidator),
     serialNumber: Joi.string().trim().required(),
     status: Joi.string().trim().valid("inUse", "discarded", "inStock").optional()
-}).options({ stripUnknown: true });
+}).options({ stripUnknown: true, convert : true, abortEarly : false });
 
 // UPDATE SCHEMA
 // Status & locationId are intentionally NOT included
@@ -26,20 +26,20 @@ export const updateIndividualAssetSchema = Joi.object({
 
 export const getAssetSummaryQuerySchema = Joi.object({
     locationId: Joi.string().trim()
-        .custom(objectIdValidator, "ObjectId validation")
+        .custom(objectIdValidator)
         .optional()
 }).options({
     stripUnknown: true,   // prevents $ne, $gt, regex injection
-    abortEarly: true
+    abortEarly: false
 });
 
 export const getAllIndividualAssetsQuerySchema = Joi.object({
     assetTypeId: Joi.string().trim()
-        .custom(objectIdValidator, "ObjectId validation")
+        .custom(objectIdValidator)
         .optional(),
 
     locationId: Joi.string().trim()
-        .custom(objectIdValidator, "ObjectId validation")
+        .custom(objectIdValidator)
         .optional(),
 
     status: Joi.string().trim()
@@ -58,7 +58,7 @@ export const getAllIndividualAssetsQuerySchema = Joi.object({
         .default(50)
 }).options({
     stripUnknown: true,   // removes injected keys like $ne, $gt
-    abortEarly: true
+    abortEarly: false
 });
 
 

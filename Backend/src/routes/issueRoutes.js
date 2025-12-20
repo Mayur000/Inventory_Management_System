@@ -9,19 +9,19 @@ import {
 
 const router = express.Router();
 
-// CREATE ISSUE
+// CREATE ISSUE  --practicalIncharge only
 router.post("/", createIssue);
 
-// GET ALL ISSUES
+// GET ALL ISSUES --admin, labAssistant, practicalIncharge, labIncharge
 router.get("/", getAllIssues);
 
-// GET ISSUE BY ID
+// GET ISSUE BY ID --admin, labAssistant, practicalIncharge, labIncharge
 router.get("/:issueId", getIssueById);
 
-// UPDATE ISSUE
+// UPDATE ISSUE --labAssisstan only
 router.put("/:issueId", updateIssue);
 
-// DELETE ISSUE
+// DELETE ISSUE --labAssisstan only
 router.delete("/:issueId", deleteIssue);
 
 export default router;

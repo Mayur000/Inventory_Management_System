@@ -22,6 +22,10 @@ const IssueSchema = new mongoose.Schema(
       enum: ["created", "inProgress", "solved"],
       default: "created",
     },
+    title: {
+      type: String,
+      required: true,
+    },
     reason: {
       type: String,
       required: true,

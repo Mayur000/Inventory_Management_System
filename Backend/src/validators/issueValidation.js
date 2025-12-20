@@ -7,20 +7,38 @@ const objectId = Joi.string().custom((value, helpers) => {
     return helpers.error("any.invalid");
   }
   return value;
-}, "ObjectId Validation");
+});
 
 // Create Issue Validation
 export const createIssueSchema = Joi.object({
-  locationId: objectId.required(),
+  locationId: Joi.string().trim().custom(objectId).required(),
   individualAssetIds: Joi.array().items(objectId).min(1).required(),
-  createdBy: objectId.required(),
-  status: Joi.string().valid("created", "inProgress", "solved").optional(),
-  reason: Joi.string().min(5).max(500).required(),
+  status: Joi.string().trim().valid("created", "inProgress", "solved").optional(),
+  reason: Joi.string().trim().min(5).max(500).required(),
+  title: Joi.string().trim().min(5).max(500).required(),
+}).options({
+    stripUnknown: true,   
+    abortEarly: false,
+    convert : true,
 });
 
 // Update Issue Validation
 export const updateIssueSchema = Joi.object({
   // Only status and reason can be updated
-  status: Joi.string().valid("created", "inProgress", "solved").optional(),
-  reason: Joi.string().min(5).max(500).optional(),
-}).min(1); // At least one field required
+  status: Joi.string().trim().valid("created", "inProgress", "solved").optional(),
+  reason: Joi.string().trim().min(5).max(500).optional(),
+  title: Joi.string().trim().min(5).max(500).optional(),
+}).min(1).options({
+    stripUnknown: true,   
+    abortEarly: false,
+    convert : true,
+});
+
+
+export const getAllIssuesQuerySchema = Joi.object({
+    status: Joi.string().trim().valid("created", "inProgress", "solved").optional(),
+    locationId: Joi.string().trim().custom(objectId).optional(),
+    search: Joi.string().trim().optional(),
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(50)
+}).options({ stripUnknown: true, abortEarly: false, convert : true });
