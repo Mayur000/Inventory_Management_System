@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import IndividualAsset from "../models/IndividualAsset.js";
 import Location from "../models/Location.js"
 import AssetType from "../models/AssetType.js";
-import { createIndividualAssetSchema, updateIndividualAssetSchema, bulkInsertSchema } from "../validators/individualAssetValidation.js";
+import { createIndividualAssetSchema, updateIndividualAssetSchema } from "../validators/individualAssetValidation.js";
 
 // CREATE SINGLE ASSET
 export const createIndividualAsset = async (req, res) => {
