@@ -25,12 +25,6 @@ export const createIssue = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid locationId" });
         }
 
-        // Check user exists
-        const user = await User.findById(value.createdBy).lean();
-        if (!user) {
-            return res.status(400).json({ success: false, message: "Invalid createdBy user" });
-        }
-
         // Fetch assets and verify existence + location match
         const assets = await IndividualAsset.find({
             _id: { $in: value.individualAssetIds }
@@ -111,7 +105,7 @@ export const getAllIssues = async (req, res) => {
             .populate("locationId individualAssetIds createdBy")
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(limit).lean();
 
         const total = await Issue.countDocuments(filter);
 
@@ -149,11 +143,11 @@ export const getIssueById = async (req, res) => {
         // Role-based access control
         const role = req.user.role;
 
-        if (role === "practicalIncharge" && !issue.createdBy.toString().equals(req.user.id.toString())) {
+        if (role === "labIncharge" && issue.locationId.toString() !== req.user.locationId.toString()) {
             return res.status(403).json({ success: false, message: "You can only view issues created by you" });
         }
 
-        if (role === "labIncharge" && !issue.locationId.toString().equals(req.user.locationId.toString())) {
+        if (role === "practicalIncharge" && issue.createdBy.toString() !== req.user.id.toString()) {
             return res.status(403).json({ success: false, message: "You can only view issues in your location" });
         }
 
