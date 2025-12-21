@@ -197,17 +197,6 @@ export const getAssetSummary = async (req, res) => {
 
         let locationId;
 
-
-        if(req.user.role === "admin"){
-            if(req.query.locationId){
-                locationId = req.query.locationId;
-            }
-        }
-
-        if(req.user.role === "labIncharge"){
-            locationId = req.user.locationId;
-        }
-
         // Joi validation (ONLY for query params)
         const { error, value } = getAssetSummaryQuerySchema.validate(req.query);
         if (error) {
@@ -215,6 +204,16 @@ export const getAssetSummary = async (req, res) => {
                 success: false,
                 message: error.details[0].message
             });
+        }
+
+        if(req.user.role === "admin"){
+            if(value.locationId){
+                locationId = value.locationId;
+            }
+        }
+
+        if(req.user.role === "labIncharge"){
+            locationId = req.user.locationId;
         }
 
         const matchStage = {
@@ -249,13 +248,6 @@ export const getAssetSummary = async (req, res) => {
             }
         },
         { $unwind: "$location" },
-
-        // exclude scrap
-        {
-            $match: {
-            "location.type": { $ne: "scrap" }
-            }
-        }
         ];
 
         // GROUPING LOGIC CHANGES HERE
