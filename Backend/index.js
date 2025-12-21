@@ -4,8 +4,13 @@ import connectDB from "./src/config/db.js";
 import assetTypeRoutes from "./src/routes/assetTypeRoutes.js";
 import IndividualAssetRoutes from "./src/routes/individualAssetRoutes.js";
 import issueRoutes from "./src/routes/issueRoutes.js";
+import cors from "cors";
+import authRouter from "./src/routes/authRoutes.js"
+import cookieParser from "cookie-parser";
 
-dotenv.config();
+dotenv.config({
+    path:"./.env"
+});
 const app=express();
 
 const PORT=process.env.PORT;
@@ -13,6 +18,13 @@ const PORT=process.env.PORT;
 connectDB();
 
 app.use(express.json());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN?.split(","),
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+app.use(cookieParser());
 
 
 //Routes
@@ -20,6 +32,7 @@ app.use("/api/asset-types", assetTypeRoutes);
 app.use("/api/individual-assets", IndividualAssetRoutes);
 app.use("/api/issues", issueRoutes);
 
+app.use("/api/auth", authRouter);
 
 app.listen(PORT, ()=>{
     console.log("App is listening on port : ", PORT);
