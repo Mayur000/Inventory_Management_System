@@ -30,6 +30,8 @@ const IssueSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    //add a image to this --optional
   },
   {
     timestamps: true,

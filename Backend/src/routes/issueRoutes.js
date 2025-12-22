@@ -24,4 +24,6 @@ router.put("/:issueId", updateIssue);
 // DELETE ISSUE --labAssisstan only
 router.delete("/:issueId", deleteIssue);
 
+// later  on ask HOD sir in meet about whether to give delete and edit access or to completely remove delete option from everywhere
+
 export default router;

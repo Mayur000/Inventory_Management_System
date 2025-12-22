@@ -17,7 +17,7 @@ router.post("/", createIndividualAsset);
 // GET ALL ASSETS --public
 router.get("/", getAllIndividualAssets);
 
-// get inventory like asset summary -- roles = admin or labIncharge
+// get inventory like asset summary -- roles = admin or labIncharge --labAssistant ko access dena hain kya ask HOD sir in next meeting
 router.get( "/asset-summary", getAssetSummary );
 
 // GET SINGLE ASSET BY ID --public
