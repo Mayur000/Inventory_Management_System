@@ -1,6 +1,6 @@
-const multer = require("multer");
-const path = require("path");
-const os = require("os");
+import multer from "multer";
+import path from "path";
+import os from "os";
 
 // Store files temporarily in OS temp directory
 const storage = multer.diskStorage({
@@ -16,4 +16,4 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-module.exports = upload;
+export default upload;

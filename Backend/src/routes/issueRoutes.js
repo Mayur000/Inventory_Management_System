@@ -1,4 +1,6 @@
-import express from "express";
+import {Router} from "express"
+
+
 import {
     createIssue,
     getAllIssues,
@@ -7,10 +9,12 @@ import {
     deleteIssue
 } from "../controllers/issueController.js";
 
-const router = express.Router();
+const router = Router();
+
+import upload from "../middleware/multer.js";
 
 // CREATE ISSUE  --practicalIncharge only
-router.post("/", createIssue);
+router.post("/", upload.single("issuePhoto"), createIssue);
 
 // GET ALL ISSUES --admin, labAssistant, practicalIncharge, labIncharge
 router.get("/", getAllIssues);
