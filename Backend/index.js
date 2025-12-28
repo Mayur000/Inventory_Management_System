@@ -7,7 +7,7 @@ import issueRoutes from "./src/routes/issueRoutes.js";
 import cors from "cors";
 import authRouter from "./src/routes/authRoutes.js"
 import cookieParser from "cookie-parser";
-
+import locationRoutes from "./src/routes/locationRoutes.js";
 
 dotenv.config({
     path:"./.env"
@@ -37,7 +37,8 @@ app.use("/api/issues", issueRoutes);
 // auth
 app.use("/api/auth", authRouter);
 
-
+//location
+app.use("/api/locations", locationRoutes);
 
 
 app.listen(PORT, ()=>{

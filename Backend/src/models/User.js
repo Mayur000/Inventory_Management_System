@@ -87,5 +87,4 @@ UserSchema.methods.generateRefreshToken = function () {
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d" }
   );
 };
-UserSchema.index({ email: 1 });
 export default mongoose.model("User", UserSchema);
