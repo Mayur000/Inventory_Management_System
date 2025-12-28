@@ -23,5 +23,5 @@ const LocationSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
+LocationSchema.index({ name: 1 }, { unique: true });
 export default mongoose.model("Location", LocationSchema);

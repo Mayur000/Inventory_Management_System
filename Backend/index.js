@@ -8,6 +8,7 @@ import cors from "cors";
 import authRouter from "./src/routes/authRoutes.js"
 import cookieParser from "cookie-parser";
 
+
 dotenv.config({
     path:"./.env"
 });
@@ -18,6 +19,7 @@ const PORT=process.env.PORT;
 connectDB();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
   origin: process.env.CORS_ORIGIN?.split(","),
   credentials: true,
@@ -32,7 +34,11 @@ app.use("/api/asset-types", assetTypeRoutes);
 app.use("/api/individual-assets", IndividualAssetRoutes);
 app.use("/api/issues", issueRoutes);
 
+// auth
 app.use("/api/auth", authRouter);
+
+
+
 
 app.listen(PORT, ()=>{
     console.log("App is listening on port : ", PORT);

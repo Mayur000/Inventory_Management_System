@@ -2,14 +2,16 @@ import { body } from "express-validator";
 
 const userLoginValidator = () => {
   return [
+    // ✅ CORRECT
     body("email")
-      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage("Email is required")
       .isEmail()
       .withMessage("Email is not valid"),
 
-    body("password")
-      .notEmpty()
-      .withMessage("Password is required"),
+    ,
+    body("password").notEmpty().withMessage("Password is required"),
   ];
 };
 
