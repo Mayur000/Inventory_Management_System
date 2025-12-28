@@ -31,38 +31,35 @@ const UserSchema = new mongoose.Schema(
       required: true,
     },
 
-    // assignedLocation: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "Location",
-    //   required: function () {
-    //     return ["admin", "labIncharge"].includes(this.role);
-    //   }
-    // },
 
     assignedLocation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Location",
       required: function () {
-        //Only enforce in production OR if location exists
-        if (process.env.NODE_ENV === "development") {
-          return false;  // skip validation during dev
-        }
-        return ["admin", "labIncharge",].includes(this.role);
-      }
+        return this.role === "labIncharge"|| this.role === "admin";
+      },
+
+      default: undefined
     },
 
+
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active"
+    },
     refreshToken: String,          // for JWT refresh token
   },
   {
     timestamps: true,
   }
 );
-UserSchema.pre("save", async function () { 
+UserSchema.pre("save", async function () {
   //run only if password is modified
-  if (!this.isModified("password")) return;  
+  if (!this.isModified("password")) return;
   // hashing the password
   this.password = await bcrypt.hash(this.password, 12);
-   
+
 });
 UserSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
