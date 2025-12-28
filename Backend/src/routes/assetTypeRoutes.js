@@ -1,4 +1,4 @@
-import express from "express";
+import {Router} from "express"
 import {
 	createAssetType,
 	getAllAssetTypes,
@@ -7,7 +7,8 @@ import {
 	deleteAssetType,
 } from "../controllers/assetTypeController.js";
 
-const router = express.Router();
+
+const router = Router();
 
 // CREATE --admin or labAssistant
 router.post("/", createAssetType);

@@ -31,7 +31,12 @@ const IssueSchema = new mongoose.Schema(
       required: true,
     },
 
-    //add a image to this --optional
+    //issue image is optional
+    issuePhoto : {
+      publicUrl : {type : String},
+      publicId : {type : String},
+
+    }
   },
   {
     timestamps: true,
