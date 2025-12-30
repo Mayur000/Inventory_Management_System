@@ -4,7 +4,7 @@ import User from "../models/User.js";
 import Location from "../models/Location.js";
 import IndividualAsset from "../models/IndividualAsset.js";
 import { createIssueSchema, updateIssueSchema, getAllIssuesQuerySchema } from "../validators/issueValidation.js";
-
+import { uploadToCloudinary, deleteFromCloudinary } from "../utils/cloudinaryHelpers.js";
 
 // Helper function to escape special regex characters
 const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
@@ -13,6 +13,7 @@ const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
 // CREATE ISSUE
 export const createIssue = async (req, res) => {
+    let issuePhoto = undefined; // variable to track issuePhoto 
     try {
         const { error, value } = createIssueSchema.validate(req.body);
         if (error) {
@@ -31,33 +32,65 @@ export const createIssue = async (req, res) => {
         }).select("_id locationId");
 
         if (assets.length !== value.individualAssetIds.length) {
-
             return res.status(400).json({ success: false, message: "One or more IndividualAssets do not exist" });
         }
 
         const invalidAsset = assets.find(
             asset => asset.locationId.toString() !== value.locationId
         );
-
         if (invalidAsset) {
-
             return res.status(400).json({ success: false, message: "One or more assets do not belong to the given location" });
         }
 
+        // ISSUE PHOTO UPLOAD (OPTIONAL)
+
+        if (req.file) {
+            
+            // FILE TYPE CHECK
+            const allowedTypes = ["image/jpeg", "image/png", "image/jpg",];
+            if (!allowedTypes.includes(req.file.mimetype)) {
+                return res.status(400).json({ success: false, message: "Only JPEG and PNG images are allowed" });
+            }
+
+            // FILE SIZE CHECK (1MB)
+            const MAX_SIZE = 1 * 1024 * 1024; // 1MB
+            if (req.file.size > MAX_SIZE) {
+                return res.status(400).json({ success: false, message: "Image size must be less than 1MB" });
+            }
+
+            const uploaded = await uploadToCloudinary(req.file.path);
+
+            issuePhoto = {
+                publicUrl: uploaded.url,
+                publicId: uploaded.publicId
+            };
+        }
+
         // Create issue (status enforced server-side)
-        const issue = await Issue.create({
+        const issueData = {
             locationId: value.locationId,
             individualAssetIds: value.individualAssetIds,
             createdBy: req.user.id,
             reason: value.reason,
-            title : value.title,
+            title: value.title,
             status: "created"
-        });
+        };
+
+        if (issuePhoto) {
+            issueData.issuePhoto = issuePhoto;
+        }
+
+        const issue = await Issue.create(issueData);
 
         return res.status(201).json({ success: true, message: "Issue created successfully", data: issue });
 
     } catch (err) {
         console.error("Error creating issue:", err);
+
+        if(issuePhoto?.publicId){
+            await deleteFromCloudinary(issuePhoto.publicId);
+        }
+
         return res.status(500).json({ success: false, message: "Failed to create issue" });
     }
 };
@@ -215,8 +248,18 @@ export const deleteIssue = async (req, res) => {
         }
 
         const deletedIssue = await Issue.findByIdAndDelete(issueId);
+
         if (!deletedIssue) {
             return res.status(404).json({ success: false, message: "Issue not found or delete failed" });
+        }
+
+        // delete cloudinary file only if DB delete is successful
+        try {
+            if (deletedIssue.issuePhoto?.publicId) {
+                await deleteFromCloudinary(deletedIssue.issuePhoto.publicId);
+            }
+        } catch (cleanupErr) {
+            console.error( "Cloudinary cleanup failed for issue:", issueId, cleanupErr );
         }
 
         return res.status(200).json({ success: true, message: "Issue deleted successfully" });
