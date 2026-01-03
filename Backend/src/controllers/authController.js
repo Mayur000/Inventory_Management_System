@@ -15,22 +15,22 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  //Count existing users
+  //count existing users
   const userCount = await User.countDocuments();
 
-  //First user MUST be admin
+  // first user must be admin
 
+  //only admin can add user ,this is done in user controller
+
+    if (userCount === 0 && role !== "admin") {
+      throw new ApiError(400, "First user must be an admin");
+    }
   
 
-    // if (userCount === 0 && role !== "admin") {
-    //   throw new ApiError(400, "First user must be an admin");
-    // }
-  
-
-  // After first user, close public registration
-  // if (userCount > 0) {
-  //   throw new ApiError(403, "Registration is closed. Contact admin to create your account");
-  // }
+  // after first user, close public registration
+  if (userCount > 0) {
+    throw new ApiError(403, "Registration is closed. Contact admin to create your account");
+  }
 
   // Check if user already exists
   const existedUser = await User.findOne({ email });
