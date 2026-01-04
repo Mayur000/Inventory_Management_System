@@ -18,10 +18,10 @@ router.use(verifyJWT);
 router.post("/",  roleMiddleware(["admin", "labAssistant"]), createAssetType);
 
 // READ (ALL) --all authenticated users
-router.get("/", getAllAssetTypes);
+router.get("/",  roleMiddleware(["admin", "labAssistant", "practicalIncharge", "labIncharge"]), getAllAssetTypes);
 
 // READ (ONE) --all authenticated users
-router.get("/:assetTypeId", getAssetTypeById);
+router.get("/:assetTypeId",  roleMiddleware(["admin", "labAssistant", "practicalIncharge", "labIncharge"]), getAssetTypeById);
 
 // UPDATE --admin or labAssistant
 router.put("/:assetTypeId",  roleMiddleware(["admin", "labAssistant"]),updateAssetType);

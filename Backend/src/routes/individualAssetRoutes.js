@@ -21,13 +21,13 @@ router.use(verifyJWT);
 router.post("/", roleMiddleware(["admin", "labAssistant"]),createIndividualAsset);
 
 // GET ALL ASSETS --all authenticated users
-router.get("/", getAllIndividualAssets);
+router.get("/",  roleMiddleware(["admin", "labAssistant", "practicalIncharge", "labIncharge"]), getAllIndividualAssets);
 
 // get inventory like asset summary -- roles = admin or labIncharge --labAssistant ko access dena hain kya ask HOD sir in next meeting
 router.get( "/asset-summary", roleMiddleware(["admin", "labIncharge"]), getAssetSummary );
 
 // GET SINGLE ASSET BY ID --all authenticated users
-router.get("/:individualAssetId", getIndividualAssetById);
+router.get("/:individualAssetId",  roleMiddleware(["admin", "labAssistant", "practicalIncharge", "labIncharge"]), getIndividualAssetById);
 
 // UPDATE SINGLE ASSET (other than status/location) --admin or labAssistant only
 router.put("/:individualAssetId", roleMiddleware(["admin", "labAssistant"]), updateIndividualAsset);
