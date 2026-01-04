@@ -1,6 +1,5 @@
-import {Router} from "express"
-
-
+import express from "express"
+import upload from "../middleware/multer.js";
 import {
     createIssue,
     getAllIssues,
@@ -9,24 +8,30 @@ import {
     deleteIssue
 } from "../controllers/issueController.js";
 
-const router = Router();
+import { verifyJWT } from "../middleware/authMiddleware.js";
+import { roleMiddleware } from "../middleware/roleMiddleware.js";
 
-import upload from "../middleware/multer.js";
+const router = express.Router();
+
+// all location routes require authentication
+router.use(verifyJWT);
+
+
 
 // CREATE ISSUE  --practicalIncharge only
-router.post("/", upload.single("issuePhoto"), createIssue);
+router.post("/", roleMiddleware(["practicalIncharge"]),upload.single("issuePhoto"), createIssue);
 
 // GET ALL ISSUES --admin, labAssistant, practicalIncharge, labIncharge
-router.get("/", getAllIssues);
+router.get("/", roleMiddleware(["admin", "labAssistant", "practicalIncharge", "labIncharge"]), getAllIssues);
 
 // GET ISSUE BY ID --admin, labAssistant, practicalIncharge, labIncharge
-router.get("/:issueId", getIssueById);
+router.get("/:issueId", roleMiddleware(["admin", "labAssistant", "practicalIncharge", "labIncharge"]), getIssueById);
 
 // UPDATE ISSUE --labAssisstan only
-router.put("/:issueId", updateIssue);
+router.put("/:issueId", roleMiddleware(["labAssistant"]), updateIssue);
 
 // DELETE ISSUE --labAssisstan only
-router.delete("/:issueId", deleteIssue);
+router.delete("/:issueId", roleMiddleware(["labAssistant"]), deleteIssue);
 
 // later  on ask HOD sir in meet about whether to give delete and edit access or to completely remove delete option from everywhere
 

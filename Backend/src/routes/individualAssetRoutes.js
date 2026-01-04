@@ -20,13 +20,13 @@ router.use(verifyJWT);
 // CREATE SINGLE ASSET --admin or labAssistant only
 router.post("/", roleMiddleware(["admin", "labAssistant"]),createIndividualAsset);
 
-// GET ALL ASSETS --public
+// GET ALL ASSETS --all authenticated users
 router.get("/", getAllIndividualAssets);
 
 // get inventory like asset summary -- roles = admin or labIncharge --labAssistant ko access dena hain kya ask HOD sir in next meeting
 router.get( "/asset-summary", roleMiddleware(["admin", "labIncharge"]), getAssetSummary );
 
-// GET SINGLE ASSET BY ID --public
+// GET SINGLE ASSET BY ID --all authenticated users
 router.get("/:individualAssetId", getIndividualAssetById);
 
 // UPDATE SINGLE ASSET (other than status/location) --admin or labAssistant only
