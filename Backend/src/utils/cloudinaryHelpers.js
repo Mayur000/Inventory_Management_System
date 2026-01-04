@@ -1,8 +1,9 @@
-const cloudinary = require("../config/cloudinary");
-const fs = require("fs").promises;
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs/promises";
 
 
-const uploadToCloudinary = async (localFilePath) =>{
+
+export const uploadToCloudinary = async (localFilePath) =>{
     try {
         const result = await cloudinary.uploader.upload(localFilePath, {
             folder : "UpSkillr",
@@ -30,7 +31,7 @@ const uploadToCloudinary = async (localFilePath) =>{
 
 
 
-const deleteFromCloudinary = async (publicId) => {
+export const deleteFromCloudinary = async (publicId) => {
 	if (!publicId) return;
 
 	try {
@@ -48,7 +49,3 @@ const deleteFromCloudinary = async (publicId) => {
 	}
 };
 
-module.exports = {
-  uploadToCloudinary,
-  deleteFromCloudinary,
-};
