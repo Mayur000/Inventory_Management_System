@@ -36,7 +36,7 @@ const UserSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Location",
       required: function () {
-        return this.role === "labIncharge"|| this.role === "admin";
+        return this.role === "labIncharge";
       },
 
       default: undefined
@@ -68,7 +68,9 @@ UserSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       _id: this._id,       // user id
-      email: this.email, // user identity
+      email: this.email, // user identity,
+      id : this._id,
+      ...(this.assignedLocation && { locationId: this.assignedLocation }),
     },
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "15m" }
@@ -78,7 +80,7 @@ UserSchema.methods.generateAccessToken = function () {
 UserSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
-      _id: this._id, // only user id (minimal info)
+      _id: this._id, // only user id (minimal info),
     },
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d" }

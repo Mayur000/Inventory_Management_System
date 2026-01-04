@@ -121,6 +121,13 @@ export const getIndividualAssetById = async (req, res) => {
             return res.status(404).json({ success: false, message: "Individual asset not found." });
         }
 
+        if (req.user.role === "labIncharge") {
+            if (asset.locationId._id.toString() !== req.user.locationId.toString()) {
+                return res.status(403).json({ success : false, message: "Lab Incharge can access only their location's assets." });
+            }
+        }
+
+
         return res.status(200).json({ success: true, data: asset });
     } catch (error) {
         console.error(error);

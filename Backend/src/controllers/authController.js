@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/User.js";
 import generateRefreshAndAccessToken from "../utils/token.js";
 import jwt from "jsonwebtoken";
+import Location from "../models/Location.js"
 
 // register
 
@@ -84,16 +85,28 @@ const login = asyncHandler(async (req, res) => {
   const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) throw new ApiError(400, "Invalid credentials");
 
-  // generate tokens
-  const { accessToken, refreshToken } = await generateRefreshAndAccessToken(
-    user._id
-  );
-
   //remove sensitive fields
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
 
+  let locationId = null;
+  if (loggedInUser.role === "labIncharge") {
+    const location = await Location.findOne({
+      locationInchargeId: loggedInUser._id
+    });
+
+    if (!location) {
+      throw new ApiError( 403, "For Lab Incharge login, location must be assigned first." );
+    }
+
+    locationId = location._id;
+  }
+
+  // generate tokens
+  const { accessToken, refreshToken } = await generateRefreshAndAccessToken(
+    user._id, locationId
+  );
   // cookie options (secure storage)
   const options = {
     httpOnly: true, // prevent JS access
@@ -110,7 +123,7 @@ const login = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         {
-          user: loggedInUser,
+          user: {...loggedInUser, ...(locationId && { locationId })},
           accessToken,
           refreshToken
         },
