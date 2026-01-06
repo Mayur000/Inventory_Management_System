@@ -12,7 +12,7 @@ const Home = () => {
       <div className="absolute top-0 right-0 w-72 h-72 bg-blue-200 rounded-full blur-3xl opacity-70" />
 
       {/* Header */}
-      <header className="relative z-10 flex items-center gap-4 px-12 py-6">
+      {/* <header className="relative z-10 flex items-center gap-4 px-12 py-6">
         <img
           src="/logo.jpeg"
           alt="College Logo"
@@ -26,6 +26,21 @@ const Home = () => {
             COMPUTER DEPARTMENT
           </span>
         </div>
+      </header> */}
+
+      <header className="relative z-10 flex flex-col items-center text-center pt-6">
+        <img
+          src="/logo.jpeg"
+          alt="College Logo"
+          className="w-24 h-24 object-contain"
+        />
+        <h1 className="font-jomhuria text-[75px] leading-none text-[#090F31]">
+          DATTA MEGHE COLLEGE OF ENGINEERING, AIROLI
+        </h1>
+        
+        <h2 className="font-jomhuria text-[64px] leading-none text-[#090F31]">
+          COMPUTER DEPARTMENT
+        </h2>
       </header>
 
       {/* Hero Section */}
