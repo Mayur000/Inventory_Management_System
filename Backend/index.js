@@ -8,6 +8,7 @@ import cors from "cors";
 import authRouter from "./src/routes/authRoutes.js"
 import cookieParser from "cookie-parser";
 import locationRoutes from "./src/routes/locationRoutes.js";
+import userRoutes from "./src/routes/usersRoute.js"
 
 dotenv.config({
     path:"./.env"
@@ -36,6 +37,10 @@ app.use("/api/issues", issueRoutes);
 
 // auth
 app.use("/api/auth", authRouter);
+
+//user
+app.use("/api/users", userRoutes);
+
 
 //location
 app.use("/api/locations", locationRoutes);
