@@ -6,14 +6,20 @@ const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 
 
 //Create a new Asset Type
-//Note we are not calculating totalCost = rate * totalQuantityBought, because what if GST is there? or some discount? 
+//NOTE :- we are not calculating totalCost = rate * totalQuantityBought, because what if GST is there? or some discount? 
 // Hence totalCost also amnually only through form we will fill
 export const createAssetType = async (req, res) => {
 	try {
-		const {error, value} = createAssetTypeSchema.validate(req.body);
+		const {error, value} = createAssetTypeSchema.validate(req.body, {abortEarly : false});
 
 		if (error) {
-			return res.status(400).json({ success: false, message: error.details[0].message, });
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
 		}
 
 		const assetType = await AssetType.create(value);
@@ -30,7 +36,6 @@ export const createAssetType = async (req, res) => {
 };
 
 // Get all Asset Types
-//add validations for all filter and alos prevent regex  or nosql injection which can happpen through req.pparams
 export const getAllAssetTypes = async (req, res) => {
 	try {
 		// Validate query params
@@ -121,9 +126,15 @@ export const updateAssetType = async (req, res) => {
 		if(!req.params.assetTypeId || !mongoose.Types.ObjectId.isValid(req.params.assetTypeId)){
 			return res.status(400).json({success : false, message : "Valida Asset type Id is required."});
 		}
-		const {error , value} = updateAssetTypeSchema.validate(req.body);
+		const {error , value} = updateAssetTypeSchema.validate(req.body || {});
 		if (error) {
-			return res.status(400).json({ success: false, message: error.details[0].message, });
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
 		}
 		const updatedAssetType = await AssetType.findByIdAndUpdate(
 			req.params.assetTypeId,

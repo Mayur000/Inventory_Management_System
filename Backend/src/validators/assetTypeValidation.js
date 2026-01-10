@@ -17,7 +17,7 @@ export const createAssetTypeSchema = Joi.object({
     billNo: Joi.string().trim().required(),
 
     DPRno: Joi.string().trim().required(),
-}).options({
+}).required().options({
     stripUnknown : true,
     convert :true,
     abortEarly : false
@@ -32,17 +32,9 @@ export const updateAssetTypeSchema = Joi.object({
 
     configuration: Joi.string().trim().optional(),
 
-    rate: Joi.number().positive().optional(),
     minQuantity: Joi.number().positive().min(1).optional(),
 
-    totalQuantityBought: Joi.number().integer().min(0).optional(),
-
-    totalCost: Joi.number().min(0).optional(),
-
-    billNo: Joi.string().trim().optional(),
-
-    DPRno: Joi.string().trim().optional(),
-}).min(1).options({
+}).required().min(1).options({
     stripUnknown : true,
     convert :true,
     abortEarly : false
