@@ -14,14 +14,13 @@ export const createIndividualAssetSchema = Joi.object({
     assetTypeId: Joi.string().trim().required().custom(objectIdValidator),
     locationId: Joi.string().trim().required().custom(objectIdValidator),
     serialNumber: Joi.string().trim().required(),
-    status: Joi.string().trim().valid("inUse", "discarded", "inStock").optional()
+    // status: Joi.string().trim().valid("inUse", "discarded", "inStock").optional()
 }).options({ stripUnknown: true, convert : true, abortEarly : false });
 
 // UPDATE SCHEMA
-// Status & locationId are intentionally NOT included
+// Status & locationId are intentionally NOT included --as they cannot be updated --can only be changed thorugh movement
 export const updateIndividualAssetSchema = Joi.object({
     serialNumber: Joi.string().trim().optional()
-    // you can add other metadata fields here later
 }).options({ stripUnknown: true });
 
 export const getAssetSummaryQuerySchema = Joi.object({
