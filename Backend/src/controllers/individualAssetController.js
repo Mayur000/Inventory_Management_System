@@ -16,8 +16,14 @@ export const createIndividualAsset = async (req, res) => {
     try {
         const { error, value } = createIndividualAssetSchema.validate(req.body);
         if (error) {
-            return res.status(400).json({ success: false, message: error.details[0].message });
-        }
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
+		}
 
         // Ensure assetTypeId and locationId exist
         const assetTypeExists = await AssetType.findById(value.assetTypeId);
@@ -74,11 +80,14 @@ export const getAllIndividualAssets = async (req, res) => {
         // Joi validation
         const { error, value } = getAllIndividualAssetsQuerySchema.validate(req.query);
         if (error) {
-            return res.status(400).json({
-                success: false,
-                message: error.details[0].message
-            });
-        }
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
+		}
 
         let { assetTypeId, locationId, status, page, limit, search } = value;
 
@@ -166,8 +175,14 @@ export const updateIndividualAsset = async (req, res) => {
 
         const { error, value } = updateIndividualAssetSchema.validate(req.body);
         if (error) {
-            return res.status(400).json({ success: false, message: error.details[0].message });
-        }
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
+		}
 
         const asset = await IndividualAsset.findById(individualAssetId).populate("assetTypeId locationId");
 
@@ -220,11 +235,14 @@ export const getAssetSummary = async (req, res) => {
         // Joi validation (ONLY for query params)
         const { error, value } = getAssetSummaryQuerySchema.validate(req.query);
         if (error) {
-            return res.status(400).json({
-                success: false,
-                message: error.details[0].message
-            });
-        }
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
+		}
 
         if(req.user.role === "admin"){
             if(value.locationId){

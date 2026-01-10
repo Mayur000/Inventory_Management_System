@@ -17,8 +17,14 @@ export const createIssue = async (req, res) => {
     try {
         const { error, value } = createIssueSchema.validate(req.body);
         if (error) {
-            return res.status(400).json({ success: false, message: error.details[0].message });
-        }
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
+		}
 
         // Check location exists
         const location = await Location.findById(value.locationId).lean();
@@ -96,9 +102,7 @@ export const createIssue = async (req, res) => {
 };
 
 
-// GET ALL ISSUES --yet to add filter, search and pagination
-//add validations for all filter and alos prevent regex  or nosql injection which can happpen through req.pparams
-// Helper function to escape special regex characters
+// GET ALL ISSUES
 export const getAllIssues = async (req, res) => {
     try {
         // Validate query params
@@ -176,12 +180,12 @@ export const getIssueById = async (req, res) => {
         // Role-based access control
         const role = req.user.role;
 
-        if (role === "labIncharge" && issue.locationId.toString() !== req.user.locationId.toString()) {
-            return res.status(403).json({ success: false, message: "You can only view issues created by you" });
+        if (role === "labIncharge" && issue.locationId._id.toString() !== req.user.locationId.toString()) {
+            return res.status(403).json({ success: false, message: "You can only view issues in your location." });
         }
 
         if (role === "practicalIncharge" && issue.createdBy.toString() !== req.user.id.toString()) {
-            return res.status(403).json({ success: false, message: "You can only view issues in your location" });
+            return res.status(403).json({ success: false, message: "You can only view issues created by you." });
         }
 
         // admin and labAssistant can view all issues (no restriction)
@@ -213,7 +217,7 @@ export const updateIssue = async (req, res) => {
         }
 
         const allowedTransitions = {
-            created: ["inProgress"],
+            created: ["inProgress", "solved"],
             inProgress: ["solved"],
             solved: [],
         };

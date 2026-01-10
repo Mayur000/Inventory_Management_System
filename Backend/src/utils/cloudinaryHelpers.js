@@ -6,7 +6,7 @@ import fs from "fs/promises";
 export const uploadToCloudinary = async (localFilePath) =>{
     try {
         const result = await cloudinary.uploader.upload(localFilePath, {
-            folder : "UpSkillr",
+            folder : "Inventory_Management_System",
         });
 
         return {
