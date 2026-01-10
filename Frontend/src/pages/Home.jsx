@@ -14,7 +14,7 @@ const Home = () => {
       {/* Header */}
       {/* <header className="relative z-10 flex items-center gap-4 px-12 py-6">
         <img
-          src="/logo.jpeg"
+          src="/dmce.png"
           alt="College Logo"
           className="w-14 h-14 object-contain"
         />
@@ -28,25 +28,29 @@ const Home = () => {
         </div>
       </header> */}
 
-      <header className="relative z-10 flex flex-col items-center text-center pt-6">
+      <header className="relative z-10 h-[140px] px-12 pt-6">
+        {/* Logo – top left */}
         <img
-          src="/logo.jpeg"
+          src="/dmce.png"
           alt="College Logo"
-          className="w-24 h-24 object-contain"
+          className="absolute left-12 top-6 w-24 h-24 object-contain"
         />
-        <h1 className="font-jomhuria text-[75px] leading-none text-[#090F31]">
-          DATTA MEGHE COLLEGE OF ENGINEERING, AIROLI
-        </h1>
         
-        <h2 className="font-jomhuria text-[64px] leading-none text-[#090F31]">
-          COMPUTER DEPARTMENT
-        </h2>
+        {/* Centered text */}
+        <div className="text-center">
+          <h1 className="font-jomhuria text-[75px] leading-none text-[#090F31]">
+            DATTA MEGHE COLLEGE OF ENGINEERING, AIROLI
+          </h1>
+          <h2 className="font-jomhuria text-[64px] leading-none text-[#090F31]">
+            COMPUTER DEPARTMENT
+          </h2>
+        </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 grid grid-cols-1 lg:grid-cols-2 items-center px-12 py-16 gap-10">
+      {/* <section className="relative z-10 grid grid-cols-1 lg:grid-cols-2 items-center px-12 py-16 gap-10"> */}
         {/* Left */}
-        <div>
+        {/* <div>
           <h1 className="text-4xl xl:text-5xl font-extrabold text-blue-700 leading-tight">
             INVENTORY <br /> MANAGEMENT
           </h1>
@@ -70,17 +74,61 @@ const Home = () => {
               Sign up
             </Link>
           </div>
-        </div>
+        </div> */}
 
         {/* Right */}
-        <div className="flex justify-center lg:justify-end">
+        {/* <div className="flex justify-center lg:justify-end">
           <img
             src="/inventory-illustration.png"
             alt="Inventory Illustration"
             className="w-full max-w-md"
           />
         </div>
-      </section>
+      </section> */}
+
+      {/* Hero Section */}
+<section className="relative z-10 w-full mt-2">
+  {/* Canvas wrapper */}
+  <div className="relative mx-auto w-[1280px] h-[600px]">
+    
+    {/* Hero Image (right aligned) */}
+    <img
+      src="/inventory-illustration.png"
+      alt="Inventory Illustration"
+      className="absolute right-0 top-0 h-full object-contain"
+    />
+
+    {/* Text Overlay */}
+    <div className="absolute top-[140px] left-[80px] max-w-md">
+      <h1 className="font-jomhuria text-[96px] leading-none text-blue-700">
+        INVENTORY <br /> MANAGEMENT
+      </h1>
+
+      <p className="mt-4 font-jomhuria text-[30px] text-blue-600 leading-tight">
+        MANAGE, TRACK, AND MONITOR COLLEGE ASSETS
+        <br />
+        EFFICIENTLY IN ONE CENTRALIZED SYSTEM.
+      </p>
+
+      <div className="mt-6 flex gap-4">
+        <Link
+          to="/login"
+          className="px-8 py-3 rounded-full bg-blue-700 text-white font-semibold"
+        >
+          Login
+        </Link>
+
+        <Link
+          to="/signup"
+          className="px-8 py-3 rounded-full bg-blue-700 text-white font-semibold"
+        >
+          Sign up
+        </Link>
+      </div>
+    </div>
+
+  </div>
+</section>
 
       {/* Key Features */}
       <section className="relative z-10 px-12 py-14">
