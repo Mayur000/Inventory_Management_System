@@ -8,6 +8,10 @@ import { createIndividualAssetSchema, updateIndividualAssetSchema, getAllIndivid
 const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
 // CREATE SINGLE ASSET
+//Problem if locationId is of type=stock, and statuss of  individualAsset=inUse then it is logically wrong, if location type is stock then status should be insStock
+//But this logical check is not there in create single asset controller
+//hence even with status=inUse location=stock this is also saving in the DB without any error
+//So fix this
 export const createIndividualAsset = async (req, res) => {
     try {
         const { error, value } = createIndividualAssetSchema.validate(req.body);

@@ -6,6 +6,8 @@ const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 
 
 //Create a new Asset Type
+//Note we are not calculating totalCost = rate * totalQuantityBought, because what if GST is there? or some discount? 
+// Hence totalCost also amnually only through form we will fill
 export const createAssetType = async (req, res) => {
 	try {
 		const {error, value} = createAssetTypeSchema.validate(req.body);
