@@ -25,6 +25,7 @@ const AssetTypeSchema = new mongoose.Schema({
 	//example --if total 50 desktops were boought but only 25 desktops were taken by our department then enter 25 in form and not 50
 	totalQuantityBought:{
 		type:Number,
+		required : true,
 	},
 
 	totalCost : {

@@ -29,11 +29,27 @@ export const createIndividualAsset = async (req, res) => {
         if (!locationExists) {
             return res.status(400).json({ success: false, message: "Invalid locationId." });
         }
-        if (value.status === "discarded" && locationExists.type !== "scrap") {
-            return res.status(400).json({ success: false, message: "Discarded assets must be stored in scrap location." });
+
+        // Count existing individual assets for this asset type
+        const existingCount = await IndividualAsset.countDocuments({
+            assetTypeId: value.assetTypeId
+        });
+
+        // If limit exceeded, block creation
+        if(existingCount < assetTypeExists.totalQuantityBought){
+            //do nothing
+        }else{
+            return res.status(400).json({ success: false, message: `Cannot create more assets as Total QuantityBought for this asset type is : ${assetTypeExists.totalQuantityBought}.` })
         }
-        if (value.status === "inStock" && locationExists.type !== "stock") {
-            return res.status(400).json({ success: false, message: "In Stock assets must be stored in stock location." });
+        
+        // set status on server side itself
+        if(locationExists.type === "scrap"){
+            value.status = "discarded";
+        }
+        else if(locationExists.type === "stock"){
+            value.status = "inStock";
+        }else{
+            value.status = "inUse";
         }
 
 
@@ -89,6 +105,7 @@ export const getAllIndividualAssets = async (req, res) => {
         const assets = await IndividualAsset.find(filter)
             .skip((page - 1) * limit)
             .limit(limit)
+            .sort({ createdAt: -1 }) 
             .populate("assetTypeId locationId").lean();
 
         const total = await IndividualAsset.countDocuments(filter);
@@ -157,14 +174,6 @@ export const updateIndividualAsset = async (req, res) => {
         if (!asset) {
             return res.status(404).json({ success: false, message: "Individual asset not found." });
         }
-
-        // If location or status is updated, enforce rule
-        if (value.status || value.locationId) {
-            return res.status(400).json({
-                message: "Use movement module to change status or location"
-            });
-        }
-
 
 
         const updatedAsset = await IndividualAsset.findByIdAndUpdate(individualAssetId, value, { new: true, runValidators: true }).populate("locationId");
