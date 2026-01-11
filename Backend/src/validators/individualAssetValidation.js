@@ -65,3 +65,23 @@ export const getAllIndividualAssetsQuerySchema = Joi.object({
 
 
 
+
+export const locationSummaryQuerySchema = Joi.object({
+    //locationId is optional and not required --because for role=labIncharge we are not taking locationId from req.query, hence for role=labInchagre no need to send in query, hence it has tobe kept as optional
+  locationId: Joi.string().trim().custom(objectIdValidator).optional(),
+  assetTypeId: Joi.string().trim().custom(objectIdValidator).optional(),
+  status: Joi.string().optional(),
+
+  search: Joi.string().trim().optional(),
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10)
+}).options({ stripUnknown: true });
+
+export const assetDistributionQuerySchema = Joi.object({
+  assetTypeId: Joi.string().trim().custom(objectIdValidator).optional(),
+  status: Joi.string().optional(),
+
+  search: Joi.string().trim().optional(),
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10)
+}).options({ stripUnknown: true });

@@ -6,7 +6,9 @@ import {
     getIndividualAssetById,
     updateIndividualAsset,
     deleteIndividualAsset,
-    getAssetSummary
+    getAssetSummary,
+    getLocationAssetSummary,
+    getAssetDistribution
 } from "../controllers/individualAssetController.js";
 import { verifyJWT } from "../middleware/authMiddleware.js";
 import { roleMiddleware } from "../middleware/roleMiddleware.js";
@@ -24,7 +26,17 @@ router.post("/", roleMiddleware(["admin", "labAssistant"]),createIndividualAsset
 router.get("/",  roleMiddleware(["admin", "labAssistant", "practicalIncharge", "labIncharge"]), getAllIndividualAssets);
 
 // get inventory like asset summary -- roles = admin or labIncharge --labAssistant ko access dena hain kya ask HOD sir in next meeting
-router.get( "/asset-summary", roleMiddleware(["admin", "labIncharge"]), getAssetSummary );
+// router.get( "/asset-summary", roleMiddleware(["admin", "labIncharge", "labAssistant"]), getAssetSummary );
+
+// location centric view
+// in this locationId = xyz in query, what are the assets present in what quantity
+// IMPORTANT - for labIncharge location is automatically taken from server side so no need to send location in req.query
+router.get( "/location-summary", roleMiddleware(["admin", "labIncharge", "labAssistant"]), getLocationAssetSummary );
+
+// asset centric view
+// for this assetTypeId = xyz in query, in what all location in what quantity this asset type  is present
+router.get( "/asset-distribution", roleMiddleware(["admin", "labIncharge", "labAssistant"]), getAssetDistribution );
+
 
 // GET SINGLE ASSET BY ID --all authenticated users
 router.get("/:individualAssetId",  roleMiddleware(["admin", "labAssistant", "practicalIncharge", "labIncharge"]), getIndividualAssetById);
@@ -32,8 +44,8 @@ router.get("/:individualAssetId",  roleMiddleware(["admin", "labAssistant", "pra
 // UPDATE SINGLE ASSET (other than status/location) --admin or labAssistant only
 router.put("/:individualAssetId", roleMiddleware(["admin", "labAssistant"]), updateIndividualAsset);
 
-// DELETE SINGLE ASSET --admin or labAssistant only
-router.delete("/:individualAssetId", roleMiddleware(["admin", "labAssistant"]), deleteIndividualAsset);
+// DELETE SINGLE ASSET --admin or labIncharge or labAssistant only
+router.delete("/:individualAssetId", roleMiddleware(["admin", "labAssistant",]), deleteIndividualAsset);
 
 
 

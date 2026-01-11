@@ -118,6 +118,7 @@ export const getAllIssues = async (req, res) => {
 
         if (req.user.role === "practicalIncharge") {
             filter.createdBy = req.user.id;
+            if (locationId) filter.locationId = locationId;
         } else if (req.user.role === "labIncharge") {
             filter.locationId = req.user.locationId;
         } else if (req.user.role === "admin" || req.user.role === "labAssistant") {
