@@ -131,14 +131,14 @@ const Home = () => {
 </section>
 
       {/* Key Features */}
-      <section className="relative z-10 px-12 py-14">
+      {/* <section className="relative z-10 px-12 py-14">
         <h2 className="text-center text-lg font-bold tracking-wide text-gray-900 mb-12">
           KEY FEATURES
-        </h2>
+        </h2> */}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto"> */}
           {/* Feature 1 */}
-          <div className="text-center">
+          {/* <div className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 flex items-center justify-center rounded-full bg-blue-100">
               <Monitor className="w-6 h-6 text-blue-700" />
             </div>
@@ -148,10 +148,10 @@ const Home = () => {
             <p className="text-xs text-gray-600 leading-relaxed">
               Monitor all lab equipment status in real time with instant updates
             </p>
-          </div>
+          </div> */}
 
           {/* Feature 2 */}
-          <div className="text-center">
+          {/* <div className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 flex items-center justify-center rounded-full bg-green-100">
               <Wrench className="w-6 h-6 text-green-600" />
             </div>
@@ -161,10 +161,10 @@ const Home = () => {
             <p className="text-xs text-gray-600 leading-relaxed">
               Streamline repair requests and track maintenance history
             </p>
-          </div>
+          </div> */}
 
           {/* Feature 3 */}
-          <div className="text-center">
+          {/* <div className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 flex items-center justify-center rounded-full bg-purple-100">
               <Box className="w-6 h-6 text-purple-600" />
             </div>
@@ -177,17 +177,81 @@ const Home = () => {
             </p>
           </div>
         </div>
-      </section>
+      </section> */}
+
+      {/* Key Features */}
+<section className="relative z-10 py-32">
+  {/* Heading */}
+  <h2 className="text-center font-crimson text-[50px] leading-none text-[#070363] mb-20">
+    KEY FEATURES
+  </h2>
+
+  {/* Features */}
+  <div className="flex justify-center gap-40 max-w-[1400px] mx-auto">
+
+    {/* Feature 1 */}
+    <div className="flex flex-col items-center text-center">
+      <div className="w-[110px] h-[109px] flex items-center justify-center rounded-full bg-blue-100 mb-10">
+        <Monitor className="w-14 h-14 text-blue-700" />
+      </div>
+
+      <h3 className="font-calistoga text-[32px] leading-none mb-6">
+        Real-time Tracking
+      </h3>
+
+      <p className="font-inter text-[22px] leading-none opacity-85 max-w-[330px]">
+        Monitor all lab equipment status in real time with instant updates
+      </p>
+    </div>
+
+    {/* Feature 2 */}
+    <div className="flex flex-col items-center text-center">
+      <div className="w-[110px] h-[109px] flex items-center justify-center rounded-full bg-green-100 mb-10">
+        <Wrench className="w-14 h-14 text-green-600" />
+      </div>
+
+      <h3 className="font-calistoga text-[32px] leading-none mb-6">
+        Repair Management
+      </h3>
+
+      <p className="font-inter text-[22px] leading-none opacity-85 max-w-[330px]">
+        Streamline repair requests and track maintenance history
+      </p>
+    </div>
+
+    {/* Feature 3 */}
+    <div className="flex flex-col items-center text-center">
+      <div className="w-[110px] h-[109px] flex items-center justify-center rounded-full bg-purple-100 mb-10">
+        <Box className="w-14 h-14 text-purple-600" />
+      </div>
+
+      <h3 className="font-calistoga text-[32px] leading-none mb-6">
+        Stock Control
+      </h3>
+
+      <p className="font-inter text-[22px] leading-none opacity-85 max-w-[330px]">
+        Manage inventory levels and generate purchase requests automatically
+      </p>
+    </div>
+
+  </div>
+</section>
+
 
       {/* Footer */}
-      <footer className="bg-black text-center py-4">
+      {/* <footer className="bg-black text-center py-4">
         <p className="text-xs text-gray-300 font-medium">
           © 2025 Datta Meghe College of Engineering | Computer Department |
           Privacy Policy | Contact Us
         </p>
+      </footer> */}
+      <footer className="bg-black h-[157px] flex items-center justify-center">
+        <p className="font-crimson text-[28px] leading-none text-white text-center">
+          © 2025 Datta Meghe College of Engineering | Computer Department | Privacy Policy | Contact Us
+        </p>
       </footer>
     </div>
   );
-};
+};  
 
 export default Home;
