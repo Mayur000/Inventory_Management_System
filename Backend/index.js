@@ -8,6 +8,9 @@ import cors from "cors";
 import authRouter from "./src/routes/authRoutes.js"
 import cookieParser from "cookie-parser";
 import locationRoutes from "./src/routes/locationRoutes.js";
+import movementRoutes from "./src/routes/movementRoutes.js"
+import userRoutes from "./src/routes/usersRoute.js"
+
 
 dotenv.config({
     path:"./.env"
@@ -39,6 +42,12 @@ app.use("/api/auth", authRouter);
 
 //location
 app.use("/api/locations", locationRoutes);
+
+//user
+app.use("/api/users", userRoutes);
+
+//movement
+app.use("/api/movements", movementRoutes);
 
 
 app.listen(PORT, ()=>{

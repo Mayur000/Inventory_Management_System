@@ -28,9 +28,9 @@ const registerUser = asyncHandler(async (req, res) => {
     }
   
 
-  // after first user, close public registration
+  // after first user (that is admin), public registration are closed
   if (userCount > 0) {
-    throw new ApiError(403, "Registration is closed. Contact admin to create your account");
+    throw new ApiError(403, "Registration is closed. Contact admin");
   }
 
   // Check if user already exists
