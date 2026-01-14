@@ -40,6 +40,10 @@ app.use("/api/issues", issueRoutes);
 // auth
 app.use("/api/auth", authRouter);
 
+//user
+app.use("/api/users", userRoutes);
+
+
 //location
 app.use("/api/locations", locationRoutes);
 

@@ -26,7 +26,13 @@ router.get("/:assetTypeId",  roleMiddleware(["admin", "labAssistant", "practical
 // UPDATE --admin or labAssistant
 router.put("/:assetTypeId",  roleMiddleware(["admin", "labAssistant"]),updateAssetType);
 
-// DELETE --admin or labAssistant
+// DELETE --admin or labAssistant --maybe remove this because Hod sir said - "All hhistory should be maintained"
+// HE said something like this so maybe dont delete at all
+// Because if we delete Asset Type
+//Then its corresposing individual Assets will be deleted
+// if inidivdual aasset is deleted then its  corresponsing issues and movements will also be deleted
+//So i have not yet implemented this cascadeDeletion
+// Confirm with HOD sir
 router.delete("/:assetTypeId", roleMiddleware(["admin", "labAssistant"]), deleteAssetType);
 
 export default router;

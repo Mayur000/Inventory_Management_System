@@ -8,12 +8,22 @@ import { createIndividualAssetSchema, updateIndividualAssetSchema, getAllIndivid
 const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
 // CREATE SINGLE ASSET
+//Problem if locationId is of type=stock, and statuss of  individualAsset=inUse then it is logically wrong, if location type is stock then status should be insStock
+//But this logical check is not there in create single asset controller
+//hence even with status=inUse location=stock this is also saving in the DB without any error
+//So fix this
 export const createIndividualAsset = async (req, res) => {
     try {
         const { error, value } = createIndividualAssetSchema.validate(req.body);
         if (error) {
-            return res.status(400).json({ success: false, message: error.details[0].message });
-        }
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
+		}
 
         // Ensure assetTypeId and locationId exist
         const assetTypeExists = await AssetType.findById(value.assetTypeId);
@@ -25,11 +35,27 @@ export const createIndividualAsset = async (req, res) => {
         if (!locationExists) {
             return res.status(400).json({ success: false, message: "Invalid locationId." });
         }
-        if (value.status === "discarded" && locationExists.type !== "scrap") {
-            return res.status(400).json({ success: false, message: "Discarded assets must be stored in scrap location." });
+
+        // Count existing individual assets for this asset type
+        const existingCount = await IndividualAsset.countDocuments({
+            assetTypeId: value.assetTypeId
+        });
+
+        // If limit exceeded, block creation
+        if(existingCount < assetTypeExists.totalQuantityBought){
+            //do nothing
+        }else{
+            return res.status(400).json({ success: false, message: `Cannot create more assets as Total QuantityBought for this asset type is : ${assetTypeExists.totalQuantityBought}.` })
         }
-        if (value.status === "inStock" && locationExists.type !== "stock") {
-            return res.status(400).json({ success: false, message: "In Stock assets must be stored in stock location." });
+        
+        // set status on server side itself
+        if(locationExists.type === "scrap"){
+            value.status = "discarded";
+        }
+        else if(locationExists.type === "stock"){
+            value.status = "inStock";
+        }else{
+            value.status = "inUse";
         }
 
 
@@ -54,11 +80,14 @@ export const getAllIndividualAssets = async (req, res) => {
         // Joi validation
         const { error, value } = getAllIndividualAssetsQuerySchema.validate(req.query);
         if (error) {
-            return res.status(400).json({
-                success: false,
-                message: error.details[0].message
-            });
-        }
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
+		}
 
         let { assetTypeId, locationId, status, page, limit, search } = value;
 
@@ -85,6 +114,7 @@ export const getAllIndividualAssets = async (req, res) => {
         const assets = await IndividualAsset.find(filter)
             .skip((page - 1) * limit)
             .limit(limit)
+            .sort({ createdAt: -1 }) 
             .populate("assetTypeId locationId").lean();
 
         const total = await IndividualAsset.countDocuments(filter);
@@ -145,22 +175,20 @@ export const updateIndividualAsset = async (req, res) => {
 
         const { error, value } = updateIndividualAssetSchema.validate(req.body);
         if (error) {
-            return res.status(400).json({ success: false, message: error.details[0].message });
-        }
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
+		}
 
         const asset = await IndividualAsset.findById(individualAssetId).populate("assetTypeId locationId");
 
         if (!asset) {
             return res.status(404).json({ success: false, message: "Individual asset not found." });
         }
-
-        // If location or status is updated, enforce rule
-        if (value.status || value.locationId) {
-            return res.status(400).json({
-                message: "Use movement module to change status or location"
-            });
-        }
-
 
 
         const updatedAsset = await IndividualAsset.findByIdAndUpdate(individualAssetId, value, { new: true, runValidators: true }).populate("locationId");
@@ -198,7 +226,7 @@ export const deleteIndividualAsset = async (req, res) => {
     }
 };
 
-
+// --filter by locationId, Status, assetTypeId
 export const getAssetSummary = async (req, res) => {
     try {
 
@@ -207,13 +235,16 @@ export const getAssetSummary = async (req, res) => {
         // Joi validation (ONLY for query params)
         const { error, value } = getAssetSummaryQuerySchema.validate(req.query);
         if (error) {
-            return res.status(400).json({
-                success: false,
-                message: error.details[0].message
-            });
-        }
+			return res.status(400).json({
+				success: false,
+				errors: error.details.map(err => ({
+				field: err.path[0],
+				message: err.message
+				}))
+			});
+		}
 
-        if(req.user.role === "admin"){
+        if(req.user.role === "admin" || req.user.role === "labAssistant"){
             if(value.locationId){
                 locationId = value.locationId;
             }
@@ -223,9 +254,6 @@ export const getAssetSummary = async (req, res) => {
             locationId = req.user.locationId;
         }
 
-        const matchStage = {
-            status: { $ne: "discarded" }
-        };
 
         if (locationId) {
         matchStage.locationId = new mongoose.Types.ObjectId(locationId);
@@ -330,3 +358,217 @@ export const getAssetSummary = async (req, res) => {
 };
 
 
+// location centric view
+// in this location = xyz what are the assets present in what quantity
+// IMPORTANT - for labIncharge location is automatically taken from server side so no need to send location in req.query
+export const getLocationAssetSummary = async (req, res) => {
+    try {
+        const { error, value } = locationSummaryQuerySchema.validate(req.query);
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                errors: error.details.map(e => ({
+                field: e.path[0],
+                message: e.message
+                }))
+            });
+        }
+
+        const { locationId, assetTypeId, status, search, page, limit } = value;
+
+        const skip = (page - 1) * limit;
+
+        const matchStage = {};
+
+        // ROLE BASED LOCATION
+        if (req.user.role === "labIncharge") {
+            matchStage.locationId = new mongoose.Types.ObjectId(req.user.locationId);
+        } else {
+
+            if (!locationId) {
+                return res.status(400).json({ success: false, message: "locationId is required" });
+            }
+
+            matchStage.locationId = new mongoose.Types.ObjectId(locationId);
+        }
+
+        if (status) {
+            matchStage.status = status;
+        }
+        if (assetTypeId){
+            matchStage.assetTypeId = new mongoose.Types.ObjectId(assetTypeId);
+        }
+
+        const pipeline = [
+        { $match: matchStage },
+
+        {
+            $lookup: {
+            from: "assettypes",
+            localField: "assetTypeId",
+            foreignField: "_id",
+            as: "assetType"
+            }
+        },
+        { $unwind: "$assetType" }
+        ];
+
+        // SEARCH (after lookup)
+        if (search) {
+        pipeline.push({
+            $match: {
+            $or: [
+                { "assetType.name": { $regex: search, $options: "i" } },
+                { "assetType.configuration": { $regex: search, $options: "i" } }
+            ]
+            }
+        });
+        }
+
+        pipeline.push(
+        {
+            $group: {
+            _id: "$assetType._id",
+            assetName: { $first: "$assetType.name" },
+            configuration: { $first: "$assetType.configuration" },
+            quantity: { $sum: 1 }
+            }
+        },
+        {
+            $project: {
+            _id: 0,
+            assetTypeId: "$_id",
+            assetName: 1,
+            configuration: 1,
+            quantity: 1
+            }
+        },
+        { $sort: { assetName: 1 } },
+        {
+            $facet: {
+            metadata: [{ $count: "total" }],
+            data: [{ $skip: skip }, { $limit: limit }]
+            }
+        }
+        );
+
+        const result = await IndividualAsset.aggregate(pipeline);
+
+        const total = result[0].metadata[0]?.total || 0;
+
+        return res.status(200).json({
+            success: true,
+            page,
+            limit,
+            totalCount:total,
+            totalPages: Math.ceil(total/limit),
+            data: result[0].data
+        });
+
+    } catch (err) {
+        console.error("Location summary error:", err);
+        return res.status(500).json({ success: false, message: "Failed to fetch location asset summary" });
+    }
+};
+
+
+
+// asset centric view
+// for this assetType = xyz, in what all location in what quantity this asset type  is present
+export const getAssetDistribution = async (req, res) => {
+    try {
+        const { error, value } = assetDistributionQuerySchema.validate(req.query);
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                errors: error.details.map(e => ({
+                field: e.path[0],
+                message: e.message
+                }))
+            });
+        }
+
+        const { assetTypeId, status, search, page, limit } = value;
+
+        const skip = (page - 1) * limit;
+
+        const matchStage = {
+            assetTypeId: new mongoose.Types.ObjectId(assetTypeId)
+        };
+
+        if (req.user.role === "labIncharge") {
+            matchStage.locationId = new mongoose.Types.ObjectId(req.user.locationId);
+        }
+
+        if (status) matchStage.status = status;
+
+        const pipeline = [
+        { $match: matchStage },
+
+        {
+            $lookup: {
+            from: "locations",
+            localField: "locationId",
+            foreignField: "_id",
+            as: "location"
+            }
+        },
+        { $unwind: "$location" }
+        ];
+
+        // SEARCH (location-based)
+        if (search) {
+        pipeline.push({
+            $match: {
+            $or: [
+                { "location.name": { $regex: search, $options: "i" } },
+                { "location.type": { $regex: search, $options: "i" } }
+            ]
+            }
+        });
+        }
+
+        pipeline.push(
+        {
+            $group: {
+            _id: "$location._id",
+            locationName: { $first: "$location.name" },
+            locationType: { $first: "$location.type" },
+            quantity: { $sum: 1 }
+            }
+        },
+        {
+            $project: {
+            _id: 0,
+            locationId: "$_id",
+            locationName: 1,
+            locationType: 1,
+            quantity: 1
+            }
+        },
+        { $sort: { locationName: 1 } },
+        {
+            $facet: {
+            metadata: [{ $count: "total" }],
+            data: [{ $skip: skip }, { $limit: limit }]
+            }
+        }
+        );
+
+        const result = await IndividualAsset.aggregate(pipeline);
+        const total = result[0].metadata[0]?.total || 0;
+
+        return res.status(200).json({
+            success: true,
+            page,
+            limit,
+            totalCount:total,
+            totalPages: Math.ceil(total/limit),
+            data: result[0].data
+        });
+
+    } catch (err) {
+        console.error("Asset distribution error:", err);
+        return res.status(500).json({ success: false, message: "Failed to fetch asset distribution" });
+    }
+};

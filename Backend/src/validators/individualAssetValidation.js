@@ -14,14 +14,13 @@ export const createIndividualAssetSchema = Joi.object({
     assetTypeId: Joi.string().trim().required().custom(objectIdValidator),
     locationId: Joi.string().trim().required().custom(objectIdValidator),
     serialNumber: Joi.string().trim().required(),
-    status: Joi.string().trim().valid("inUse", "discarded", "inStock").optional()
+    // status: Joi.string().trim().valid("inUse", "discarded", "inStock").optional()
 }).options({ stripUnknown: true, convert : true, abortEarly : false });
 
 // UPDATE SCHEMA
-// Status & locationId are intentionally NOT included
+// Status & locationId are intentionally NOT included --as they cannot be updated --can only be changed thorugh movement
 export const updateIndividualAssetSchema = Joi.object({
     serialNumber: Joi.string().trim().optional()
-    // you can add other metadata fields here later
 }).options({ stripUnknown: true });
 
 export const getAssetSummaryQuerySchema = Joi.object({
@@ -66,3 +65,23 @@ export const getAllIndividualAssetsQuerySchema = Joi.object({
 
 
 
+
+export const locationSummaryQuerySchema = Joi.object({
+    //locationId is optional and not required --because for role=labIncharge we are not taking locationId from req.query, hence for role=labInchagre no need to send in query, hence it has tobe kept as optional
+  locationId: Joi.string().trim().custom(objectIdValidator).optional(),
+  assetTypeId: Joi.string().trim().custom(objectIdValidator).optional(),
+  status: Joi.string().optional(),
+
+  search: Joi.string().trim().optional(),
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10)
+}).options({ stripUnknown: true });
+
+export const assetDistributionQuerySchema = Joi.object({
+  assetTypeId: Joi.string().trim().custom(objectIdValidator).optional(),
+  status: Joi.string().optional(),
+
+  search: Joi.string().trim().optional(),
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10)
+}).options({ stripUnknown: true });

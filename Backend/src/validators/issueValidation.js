@@ -13,7 +13,7 @@ const objectIdValidator = (value, helpers) => {
 // Create Issue Validation
 export const createIssueSchema = Joi.object({
   locationId: Joi.string().trim().custom(objectIdValidator).required(),
-  individualAssetIds: Joi.array().items(objectIdValidator).min(1).required(),
+  individualAssetIds: Joi.array().items(Joi.string().trim().custom(objectIdValidator)).min(1).required(),
   status: Joi.string().trim().valid("created", "inProgress", "solved").optional(),
   reason: Joi.string().trim().min(5).max(500).required(),
   title: Joi.string().trim().min(5).max(500).required(),
