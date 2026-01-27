@@ -1,5 +1,5 @@
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/apiResponse.js";
+import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/User.js";
 import generateRefreshAndAccessToken from "../utils/token.js";

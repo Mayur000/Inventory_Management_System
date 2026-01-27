@@ -1,4 +1,4 @@
-import { ApiError } from "../utils/ApiError.js";
+import { ApiError } from "../utils/apiError.js";
 
 // Check if user has required role
 export const roleMiddleware = (allowedRoles = []) => {
