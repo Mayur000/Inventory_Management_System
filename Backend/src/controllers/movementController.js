@@ -6,6 +6,51 @@ import Movement from "../models/Movement.js";
 import IndividualAsset from "../models/IndividualAsset.js";
 import Location from "../models/Location.js";
 import Issue from "../models/Issue.js";
+import AssetType from "../models/AssetType.js";  
+
+// helper function to check low stock
+const checkLowStock = async (locationId, movedAssetTypeIds) => {
+  // only check stock/mainStore locations
+  const location = await Location.findById(locationId);
+  if (!location || !["stock", "mainStore"].includes(location.type)) {
+    return [];
+  }
+
+  const lowStockItems = [];
+
+  // check each asset type that was moved
+  for (const assetTypeId of movedAssetTypeIds) {
+    // get AssetType to check minQuantity
+    const assetType = await AssetType.findById(assetTypeId);
+    
+    if (!assetType || !assetType.minQuantity || assetType.minQuantity === 0) {
+      continue; // Skip if no minQuantity set or is 0
+    }
+
+    // count current quantity at this location 
+    const currentQuantity = await IndividualAsset.countDocuments({
+      assetTypeId: assetTypeId,
+      locationId: locationId,
+      status: { $ne: "discarded" }  // don't count discarded items
+    });
+
+    // compare: current vs minimum
+    if (currentQuantity <= assetType.minQuantity) {
+      lowStockItems.push({
+        assetType: {
+          _id: assetType._id,
+          name: assetType.name,
+          configuration: assetType.configuration
+        },
+        currentQuantity,
+        minQuantity: assetType.minQuantity,
+        deficit: assetType.minQuantity - currentQuantity
+      });
+    }
+  }
+
+  return lowStockItems;
+};
 
 //  create transfer 
 const createTransfer = asyncHandler(async (req, res) => {
@@ -18,7 +63,7 @@ const createTransfer = asyncHandler(async (req, res) => {
     issues
   } = req.body;
 
-
+  
   if (!individualAssetIds || individualAssetIds.length === 0) {
     throw new ApiError(400, "At least one asset must be selected");
   }
@@ -86,7 +131,7 @@ const createTransfer = asyncHandler(async (req, res) => {
   });
 
   if (assets.length !== individualAssetIds.length) {
-    throw new ApiError(404, "Some assets not found");
+    throw new ApiError(404, "Some assets not found");  
   }
 
   //  edge case 5: check all assets are at fromLocation
@@ -120,8 +165,8 @@ const createTransfer = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Movement must be linked to at least one issue");
   }
 
-  // Fetch all issues
-  const issueRecords = await Issue.find({ _id: { $in: issues } });
+// Fetch all issues
+    const issueRecords = await Issue.find({ _id: { $in: issues } });
 
   if (issueRecords.length !== issues.length) {
     throw new ApiError(404, "Some issues not found");
@@ -166,6 +211,9 @@ const createTransfer = asyncHandler(async (req, res) => {
       );
     }
   }
+
+  // Track which asset types are being moved (for low stock check)
+  const movedAssetTypeIds = [...new Set(assets.map(a => a.assetTypeId.toString()))];
 
   // transaction
   const session = await mongoose.startSession();
@@ -218,7 +266,21 @@ const createTransfer = asyncHandler(async (req, res) => {
     //  commit transaction
     await session.commitTransaction();
 
-    //  fetch populated movement record
+
+    // check low stock AFTER transaction commits
+    let lowStockWarning = null;
+    if (["stock", "mainStore"].includes(fromLocation.type)) {
+      const lowStock = await checkLowStock(fromLocationId, movedAssetTypeIds);
+      
+      if (lowStock.length > 0) {
+        lowStockWarning = {
+          message: "⚠️ Warning: Some items are now below minimum stock level",
+          items: lowStock
+        };
+      }
+    }
+
+    // fetch populated movement record
     const populatedMovement = await Movement.findById(movement[0]._id)
       .populate("individualAssetIds", "serialNumber status")
       .populate("fromLocationId", "name type")
@@ -229,7 +291,10 @@ const createTransfer = asyncHandler(async (req, res) => {
     return res.status(201).json(
       new ApiResponse(
         201,
-        { movement: populatedMovement },
+        {
+          movement: populatedMovement,
+          lowStockWarning  
+        },
         `${actionType === "discard" ? "Assets discarded" : "Transfer completed"} successfully`
       )
     );
@@ -242,7 +307,7 @@ const createTransfer = asyncHandler(async (req, res) => {
   }
 });
 
-//  get all movements 
+//  get all movements
 const getAllMovements = asyncHandler(async (req, res) => {
   const {
     fromLocationId,
@@ -263,14 +328,14 @@ const getAllMovements = asyncHandler(async (req, res) => {
   if (actionType) filter.actionType = actionType;
   if (doneBy) filter.doneBy = doneBy;
 
-  // date range filter
+    // date range filter
   if (startDate || endDate) {
     filter.date = {};
     if (startDate) filter.date.$gte = new Date(startDate);
     if (endDate) filter.date.$lte = new Date(endDate);
   }
 
-  //  role-based filtering
+    //  role-based filtering
   const user = req.user;
 
   if (user.role === "practicalIncharge") {
@@ -278,13 +343,13 @@ const getAllMovements = asyncHandler(async (req, res) => {
   }
 
   if (user.role === "labIncharge") {
-    // lab Incharge can only see movements involving their location
+        // lab Incharge can only see movements involving their location
     filter.$or = [
       { fromLocationId: user.assignedLocation },
       { toLocationId: user.assignedLocation }
     ];
   }
-  // admin and Lab Assistant see all movements
+    // admin and Lab Assistant see all movements
 
   const skip = (page - 1) * limit;
 
@@ -352,7 +417,7 @@ const getMovementById = asyncHandler(async (req, res) => {
       throw new ApiError(403, "You don't have access to this movement");
     }
   }
-  // admin and lab assistant can view any movement
+    // admin and lab assistant can view any movement
 
   return res.status(200).json(
     new ApiResponse(200, { movement }, "Movement fetched successfully")
@@ -363,7 +428,7 @@ const getMovementById = asyncHandler(async (req, res) => {
 const getAssetHistory = asyncHandler(async (req, res) => {
   const { assetId } = req.params;
 
-  // check if asset exists
+    // check if asset exists
   const asset = await IndividualAsset.findById(assetId)
     .populate("assetTypeId", "name configuration")
     .populate("locationId", "name type");
@@ -372,7 +437,7 @@ const getAssetHistory = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Asset not found");
   }
 
-  // get all movements involving this asset
+    // get all movements involving this asset
   const movements = await Movement.find({
     individualAssetIds: assetId
   })
@@ -398,14 +463,14 @@ const getAssetHistory = asyncHandler(async (req, res) => {
 //  get movement location history
 const getLocationMovements = asyncHandler(async (req, res) => {
   const { locationId } = req.params;
-  const { type = "all" } = req.query; 
+  const { type = "all" } = req.query;
 
   const location = await Location.findById(locationId);
   if (!location) {
     throw new ApiError(404, "Location not found");
   }
 
-  //  Role-based access for location
+    //  Role-based access for location
   const user = req.user;
 
   if (user.role === "practicalIncharge") {
