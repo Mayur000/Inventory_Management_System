@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import IndividualAsset from "../models/IndividualAsset.js";
 import Location from "../models/Location.js"
 import AssetType from "../models/AssetType.js";
-import { createIndividualAssetSchema, updateIndividualAssetSchema, getAllIndividualAssetsQuerySchema, getAssetSummaryQuerySchema } from "../validators/individualAssetValidation.js";
+import { createIndividualAssetSchema, updateIndividualAssetSchema, getAllIndividualAssetsQuerySchema, assetDistributionQuerySchema, locationSummaryQuerySchema } from "../validators/individualAssetValidation.js";
 
 // Helper function to escape special regex characters
 const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
