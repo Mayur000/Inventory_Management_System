@@ -10,7 +10,7 @@ import cookieParser from "cookie-parser";
 import locationRoutes from "./src/routes/locationRoutes.js";
 import movementRoutes from "./src/routes/movementRoutes.js"
 import userRoutes from "./src/routes/usersRoute.js"
-
+import { errorHandler } from "./src/middleware/errormiddleware.js";
 
 dotenv.config({
     path:"./.env"
@@ -53,6 +53,9 @@ app.use("/api/users", userRoutes);
 //movement
 app.use("/api/movements", movementRoutes);
 
+
+// global error middleware (last line!!!)
+app.use(errorHandler);
 
 app.listen(PORT, ()=>{
     console.log("App is listening on port : ", PORT);
